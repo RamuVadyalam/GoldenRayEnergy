@@ -1,0 +1,51 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
+// Website pages
+import WebsitePage from './pages/WebsitePage';
+import LoginPage from './pages/LoginPage';
+
+// Portal pages
+import PortalLayout from './components/layout/PortalLayout';
+import DashboardPage from './pages/portal/DashboardPage';
+import DealsPage from './pages/portal/DealsPage';
+import SalesPage from './pages/portal/SalesPage';
+import TasksPage from './pages/portal/TasksPage';
+import PipelinePage from './pages/portal/PipelinePage';
+import CampaignsPage from './pages/portal/CampaignsPage';
+import EmailAnalyticsPage from './pages/portal/EmailAnalyticsPage';
+import LeadScoringPage from './pages/portal/LeadScoringPage';
+import ContactsPage from './pages/portal/ContactsPage';
+import CompaniesPage from './pages/portal/CompaniesPage';
+import ReportsPage from './pages/portal/ReportsPage';
+import AdminPage from './pages/portal/AdminPage';
+
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full" /></div>;
+  return user ? children : <Navigate to="/login" />;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<WebsitePage />} />
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route path="/portal" element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
+        <Route index element={<DashboardPage />} />
+        <Route path="deals" element={<DealsPage />} />
+        <Route path="sales" element={<SalesPage />} />
+        <Route path="tasks" element={<TasksPage />} />
+        <Route path="pipeline" element={<PipelinePage />} />
+        <Route path="campaigns" element={<CampaignsPage />} />
+        <Route path="email-analytics" element={<EmailAnalyticsPage />} />
+        <Route path="lead-scoring" element={<LeadScoringPage />} />
+        <Route path="contacts" element={<ContactsPage />} />
+        <Route path="companies" element={<CompaniesPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="admin" element={<AdminPage />} />
+      </Route>
+    </Routes>
+  );
+}
