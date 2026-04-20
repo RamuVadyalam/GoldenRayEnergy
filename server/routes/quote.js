@@ -2,8 +2,72 @@ import { Router } from 'express';
 import { calculateSolar } from '../services/calcService.js';
 import { generateQuotePDF } from '../services/quotePdfService.js';
 import { sendQuoteEmail } from '../services/emailService.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
 const router = Router();
+
+// Public endpoint — save website enquiry to website_enquiries table (no auth required)
+router.post('/submit', async (req, res) => {
+  try {
+    const { form, calculation } = req.body;
+    if (!form) return res.status(400).json({ error: 'Form data is required.' });
+    if (!supabaseAdmin) return res.status(503).json({ error: 'Database not configured.' });
+
+    if (!form.firstName && !form.lastName && !form.email && !form.phone)
+      return res.status(400).json({ error: 'Please provide at least a name, email, or phone number.' });
+
+    // Lead score based on form completeness
+    let score = 10;
+    if (form.firstName && form.lastName)  score += 10;
+    if (form.email)                        score += 15;
+    if (form.phone)                        score += 15;
+    if (form.address)                      score += 10;
+    if (form.monthlyBill)                  score += 10;
+    if (form.installationType)             score += 10;
+    if (form.roofType)                     score += 5;
+    if (form.callToDiscuss === 'yes')      score += 15;
+    if (calculation?.totalCost)            score += 10;
+
+    const { data, error } = await supabaseAdmin
+      .from('website_enquiries')
+      .insert({
+        first_name:             form.firstName             || null,
+        last_name:              form.lastName              || null,
+        email:                  form.email                 || null,
+        phone:                  form.phone                 || null,
+        address:                form.address               || null,
+        owns_home:              form.ownsHome              || null,
+        floors:                 form.floors ? parseInt(form.floors) : null,
+        roof_type:              form.roofType              || null,
+        installation_type:      form.installationType      || null,
+        battery_option:         form.batteryOption         || null,
+        call_to_discuss:        form.callToDiscuss         || null,
+        installation_timeframe: form.installationTimeframe || null,
+        monthly_bill:           form.monthlyBill ? parseFloat(form.monthlyBill) : null,
+        // Calculation snapshot
+        system_size_kw:         calculation?.systemSize    || null,
+        total_cost:             calculation?.totalCost     || null,
+        monthly_savings:        calculation?.monthlySavings || null,
+        annual_savings:         calculation?.annualSavings || null,
+        payback_years:          calculation?.paybackYears  || null,
+        roi_percent:            calculation?.roi           || null,
+        panels:                 calculation?.panels        || null,
+        battery_kwh:            calculation?.batteryKwh    || null,
+        // Meta
+        lead_score: Math.min(score, 100),
+        status:     'new',
+      })
+      .select('id')
+      .single();
+
+    if (error) throw error;
+
+    res.status(201).json({ success: true, id: data.id });
+  } catch (e) {
+    console.error('Submit enquiry error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // Public endpoint — no auth required
 router.post('/calculate', (req, res) => {

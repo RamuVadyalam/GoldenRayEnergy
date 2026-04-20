@@ -16,6 +16,7 @@ import reportRoutes from './routes/reports.js';
 import proposalRoutes from './routes/proposals.js';
 import configRoutes from './routes/config.js';
 import quoteRoutes from './routes/quote.js';
+import otpRoutes from './routes/otp.js';
 
 dotenv.config({ path: '../.env' });
 
@@ -64,6 +65,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/proposals', proposalRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/quote', quoteRoutes);
+app.use('/api/otp', otpRoutes);
 
 // ── Health Check ──
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));

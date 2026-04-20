@@ -172,6 +172,40 @@ CREATE TABLE proposals (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── Website Enquiries (public quote form submissions) ──
+CREATE TABLE website_enquiries (
+  id                     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  first_name             VARCHAR(80),
+  last_name              VARCHAR(80),
+  email                  VARCHAR(255),
+  phone                  VARCHAR(50),
+
+  address                TEXT,
+  owns_home              VARCHAR(10),
+  floors                 INTEGER,
+  roof_type              VARCHAR(50),
+
+  installation_type      VARCHAR(20),
+  battery_option         VARCHAR(30),
+  call_to_discuss        VARCHAR(10),
+  installation_timeframe VARCHAR(30),
+  monthly_bill           NUMERIC(10,2),
+
+  system_size_kw         NUMERIC(8,2),
+  panels                 INTEGER,
+  battery_kwh            NUMERIC(8,2),
+  total_cost             NUMERIC(14,2),
+  monthly_savings        NUMERIC(10,2),
+  annual_savings         NUMERIC(12,2),
+  payback_years          NUMERIC(4,1),
+  roi_percent            NUMERIC(6,1),
+
+  lead_score             INTEGER DEFAULT 0,
+  status                 VARCHAR(20) DEFAULT 'new',
+  created_at             TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ── System Config ──
 CREATE TABLE system_config (
   key VARCHAR(100) PRIMARY KEY,
@@ -194,6 +228,9 @@ CREATE INDEX idx_activities_contact ON activities(contact_id);
 CREATE INDEX idx_activities_user ON activities(user_id);
 CREATE INDEX idx_activities_created ON activities(created_at DESC);
 CREATE INDEX idx_campaigns_status ON campaigns(status);
+CREATE INDEX idx_wenq_email      ON website_enquiries(email);
+CREATE INDEX idx_wenq_status     ON website_enquiries(status);
+CREATE INDEX idx_wenq_created_at ON website_enquiries(created_at DESC);
 
 -- ── Triggers for updated_at ──
 CREATE OR REPLACE FUNCTION update_modified_column()
