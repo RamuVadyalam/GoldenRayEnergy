@@ -5,7 +5,7 @@ import KPI from '../../components/ui/KPI';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { fmt$, fmtDate, pct } from '../../utils/format';
-import { Briefcase, DollarSign, Target, TrendingUp, Megaphone, Phone, Mail, Users } from 'lucide-react';
+import { Briefcase, DollarSign, Target, TrendingUp, Megaphone, Phone, Mail, Users, Globe, ExternalLink } from 'lucide-react';
 
 const CTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -20,16 +20,18 @@ export default function DashboardPage() {
   const [deals, setDeals] = useState([]);
   const [activities, setActivities] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [webLeads, setWebLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
     try {
-      const [d, dl, act, tk] = await Promise.all([
-        api.get('/reports/dashboard'), api.get('/deals'), api.get('/activities?limit=6'), api.get('/tasks')
+      const [d, dl, act, tk, wl] = await Promise.all([
+        api.get('/reports/dashboard'), api.get('/deals'), api.get('/activities?limit=6'), api.get('/tasks'),
+        api.get('/leads?source=website&stage=new&limit=5'),
       ]);
-      setDash(d.data); setDeals(dl.data); setActivities(act.data); setTasks(tk.data);
+      setDash(d.data); setDeals(dl.data); setActivities(act.data); setTasks(tk.data); setWebLeads(wl.data || []);
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
@@ -105,9 +107,31 @@ export default function DashboardPage() {
             </div>
           ))}
         </Card>
-        <Card title="Top campaigns" subtitle="By revenue">
-          {/* We'd need campaign data from API - show from dashboard stats */}
-          <p className="text-xs text-gray-400">Campaign revenue data loads from /api/campaigns</p>
+        <Card title="New website leads" subtitle="Source: website form">
+          {webLeads.length === 0 ? (
+            <p className="text-xs text-gray-400 py-2">No new website leads yet.</p>
+          ) : webLeads.map((lead, i) => (
+            <div key={lead.id} className={`flex items-center gap-2 py-1.5 ${i < webLeads.length - 1 ? 'border-b border-gray-50' : ''}`}>
+              <div className="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center flex-shrink-0">
+                <Globe size={10} className="text-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-semibold truncate">{lead.name}</div>
+                <div className="text-[9px] text-gray-400 truncate">
+                  {lead.monthly_bill ? `$${lead.monthly_bill}/mo · ` : ''}{lead.location || lead.email || 'No contact info'}
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-0.5">
+                <span className="text-[8px] font-bold text-amber-600 bg-amber-50 rounded px-1 py-0.5">Score {lead.lead_score || 0}</span>
+                <span className="text-[8px] text-gray-300">{fmtDate(lead.created_at)}</span>
+              </div>
+            </div>
+          ))}
+          {webLeads.length > 0 && (
+            <a href="/portal/leads" className="flex items-center gap-1 mt-2 text-[9px] text-amber-600 hover:text-amber-700 font-medium">
+              <ExternalLink size={9} /> View all leads
+            </a>
+          )}
         </Card>
         <Card title="Tasks due" subtitle="Upcoming">
           {tasks.filter(t => t.status !== 'completed').slice(0, 5).map((t, i) => {

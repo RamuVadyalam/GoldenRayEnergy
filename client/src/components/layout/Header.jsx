@@ -14,7 +14,7 @@ export default function Header() {
   return (
     <header className="h-12 border-b border-gray-100 flex items-center justify-between px-5 bg-white">
       <h1 className="text-sm font-bold font-display">{title}</h1>
-      <span className="text-[10px] text-gray-300">GoldenRay Energy CRM</span>
+      <span className="text-[10px] text-gray-300">Goldenray Energy NZ — CRM</span>
     </header>
   );
 }

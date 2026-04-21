@@ -4,8 +4,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Sora', 'sans-serif'],
-        body: ['Instrument Sans', 'sans-serif'],
+        display: ['Unbounded', 'system-ui', 'sans-serif'],
+        body: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        mono: ['Space Grotesk', 'ui-monospace', 'monospace'],
+      },
+      letterSpacing: {
+        'tighter-plus': '-0.035em',
       },
       colors: {
         amber: { 450: '#f59e0b' },

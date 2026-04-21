@@ -6,7 +6,7 @@ import { supabaseAdmin } from '../config/supabase.js';
 
 const router = Router();
 
-// Public endpoint — save website enquiry to website_enquiries table (no auth required)
+// Public endpoint — saves to website_enquiries + contacts (CRM) + activities (dashboard feed)
 router.post('/submit', async (req, res) => {
   try {
     const { form, calculation } = req.body;
@@ -27,8 +27,10 @@ router.post('/submit', async (req, res) => {
     if (form.roofType)                     score += 5;
     if (form.callToDiscuss === 'yes')      score += 15;
     if (calculation?.totalCost)            score += 10;
+    const leadScore = Math.min(score, 100);
 
-    const { data, error } = await supabaseAdmin
+    // ── 1. Save full form data to website_enquiries ──────────────────────────
+    const { data: enquiry, error: enqError } = await supabaseAdmin
       .from('website_enquiries')
       .insert({
         first_name:             form.firstName             || null,
@@ -44,7 +46,6 @@ router.post('/submit', async (req, res) => {
         call_to_discuss:        form.callToDiscuss         || null,
         installation_timeframe: form.installationTimeframe || null,
         monthly_bill:           form.monthlyBill ? parseFloat(form.monthlyBill) : null,
-        // Calculation snapshot
         system_size_kw:         calculation?.systemSize    || null,
         total_cost:             calculation?.totalCost     || null,
         monthly_savings:        calculation?.monthlySavings || null,
@@ -53,16 +54,65 @@ router.post('/submit', async (req, res) => {
         roi_percent:            calculation?.roi           || null,
         panels:                 calculation?.panels        || null,
         battery_kwh:            calculation?.batteryKwh    || null,
-        // Meta
-        lead_score: Math.min(score, 100),
+        lead_score: leadScore,
         status:     'new',
       })
       .select('id')
       .single();
+    if (enqError) throw enqError;
 
-    if (error) throw error;
+    // ── 2. Create CRM contact so lead appears in employee portal ─────────────
+    const name = [form.firstName, form.lastName].filter(Boolean).join(' ').trim() || 'Website Enquiry';
+    const systemType =
+      form.installationType === 'commercial' ? 'on-grid' :
+      form.batteryOption === 'with-battery'  ? 'hybrid'  : 'on-grid';
+    const notes = [
+      form.ownsHome              && `Owns home: ${form.ownsHome}`,
+      form.floors                && `Floors: ${form.floors}`,
+      form.roofType              && `Roof type: ${form.roofType}`,
+      form.batteryOption         && `Battery: ${form.batteryOption}`,
+      form.callToDiscuss         && `Call to discuss: ${form.callToDiscuss}`,
+      form.installationTimeframe && `Timeframe: ${form.installationTimeframe}`,
+    ].filter(Boolean).join(' | ') || null;
 
-    res.status(201).json({ success: true, id: data.id });
+    const { data: contact, error: contactError } = await supabaseAdmin
+      .from('contacts')
+      .insert({
+        name,
+        email:           form.email                                            || null,
+        phone:           form.phone                                            || null,
+        location:        form.address                                          || null,
+        type:            form.installationType === 'commercial' ? 'commercial' : 'residential',
+        system_type:     systemType,
+        monthly_bill:    form.monthlyBill ? parseFloat(form.monthlyBill)       : null,
+        stage:           'new',
+        source:          'website',
+        lifecycle:       'subscriber',
+        estimated_value: calculation?.totalCost                                || null,
+        lead_score:      leadScore,
+        last_activity:   'Website enquiry submitted',
+        notes,
+      })
+      .select('id')
+      .single();
+    if (contactError) throw contactError;
+
+    // ── 3. Log activity so it appears in dashboard Recent Activity feed ──────
+    await supabaseAdmin.from('activities').insert({
+      type:        'system',
+      description: `New website lead: ${name}${form.monthlyBill ? ` — $${form.monthlyBill}/mo bill` : ''}${calculation?.totalCost ? ` — est. $${Math.round(calculation.totalCost).toLocaleString()}` : ''}`,
+      contact_id:  contact.id,
+      metadata: {
+        enquiry_id:  enquiry.id,
+        monthly_bill: form.monthlyBill || null,
+        system_size:  calculation?.systemSize || null,
+        total_cost:   calculation?.totalCost  || null,
+        lead_score:   leadScore,
+        source:       'website_form',
+      },
+    });
+
+    res.status(201).json({ success: true, id: enquiry.id, contact_id: contact.id });
   } catch (e) {
     console.error('Submit enquiry error:', e.message);
     res.status(500).json({ error: e.message });
@@ -126,7 +176,8 @@ router.post('/whatsapp-link', (req, res) => {
     const phone = customer.phone.replace(/[\s\-\(\)]/g, '').replace(/^\+/, '');
 
     const message = [
-      `☀️ *GoldenRay Energy — Solar Quote*`,
+      `☀️ *GOLDENRAY ENERGY NZ — Solar Quote*`,
+      `_Powering a Sustainable Future_`,
       ``,
       `Hi ${customer.name || 'there'},`,
       `Here's your personalized solar quote:`,

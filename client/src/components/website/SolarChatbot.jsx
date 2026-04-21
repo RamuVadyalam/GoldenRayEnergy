@@ -195,7 +195,7 @@ export default function SolarChatbot() {
   const GREETING = {
     id: 'greeting',
     from: 'bot',
-    text: `Kia ora! 👋 I'm **SolarBot**, your GoldenRay solar assistant.\n\nI can answer questions about solar costs, savings, installation, batteries, warranties, and more — all tailored to New Zealand.\n\nPick a topic below or type your question:`,
+    text: `Kia ora! 👋 I'm **SolarBot**, your Goldenray Energy NZ solar assistant.\n\nI can answer questions about solar costs, savings, installation, batteries, warranties, and more — all tailored to New Zealand.\n\nPick a topic below or type your question:`,
   };
 
   useEffect(() => {
@@ -323,12 +323,12 @@ export default function SolarChatbot() {
       >
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3.5" style={{ background: 'linear-gradient(135deg, #f59e0b, #ea580c)' }}>
-          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Sun size={18} className="text-white" />
+          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center flex-shrink-0 overflow-hidden p-0.5">
+            <img src="/logo.jpg" alt="Goldenray Energy NZ" className="w-full h-full object-contain" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-sm leading-none">SolarBot</p>
-            <p className="text-white/80 text-[10px] mt-0.5">GoldenRay Energy • Always online</p>
+            <p className="text-white/80 text-[10px] mt-0.5">Goldenray Energy NZ • Always online</p>
           </div>
           <button onClick={handleReset} title="Restart chat"
             className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
@@ -429,7 +429,7 @@ export default function SolarChatbot() {
               <Send size={15} className="text-white" />
             </button>
           </div>
-          <p className="text-[9px] text-gray-400 text-center mt-1.5">Powered by GoldenRay Energy · NZ Solar Experts</p>
+          <p className="text-[9px] text-gray-400 text-center mt-1.5">Powered by Goldenray Energy NZ · Powering a Sustainable Future</p>
         </div>
       </div>
     </>

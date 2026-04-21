@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Sun, Zap, Phone, Lock, Sparkles, Star, Mail, MapPin, Clock, CheckCircle, Send, Leaf, ArrowRight, DollarSign, User, Calculator, Battery, TrendingUp, Download, MessageCircle, Loader2, ChevronDown, Shield, Award, Wrench, Eye, Home, Building, Truck, Power, Upload } from 'lucide-react';
 import Button from '../components/ui/Button';
 import SolarChatbot from '../components/website/SolarChatbot';
+import WhatsAppAssistant from '../components/website/WhatsAppAssistant';
 import axios from 'axios';
 
 const SYSTEM_TYPES = [
@@ -12,6 +13,12 @@ const SYSTEM_TYPES = [
 ];
 
 const fmt = n => '$' + Number(n || 0).toLocaleString('en-NZ', { maximumFractionDigits: 0 });
+
+const CASE_STUDY_IMAGES = [
+  <img key='res' src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=220&fit=crop&auto=format&q=80' alt='Residential solar panels on Auckland family home' className='w-full h-full object-cover' />,
+  <img key='com' src='https://images.unsplash.com/photo-1611365892117-00ac5ef43c90?w=600&h=220&fit=crop&auto=format&q=80' alt='Commercial solar panels on warehouse roof' className='w-full h-full object-cover' />,
+  <img key='com2' src='https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=600&h=220&fit=crop&auto=format&q=80' alt='Community solar installation' className='w-full h-full object-cover' />,
+];
 
 export default function WebsitePage() {
   const [form, setForm] = useState({
@@ -148,76 +155,95 @@ export default function WebsitePage() {
   return (
     <div className="bg-white font-body">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-10 h-16 flex items-center justify-between bg-white/90 backdrop-blur border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-            <Sun size={16} className="text-white" />
+      <nav className="fixed top-0 left-0 right-0 z-50 px-10 h-16 flex items-center justify-between backdrop-blur-md shadow-lg shadow-black/20 relative" style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.96) 0%, rgba(30,27,75,0.96) 45%, rgba(80,7,36,0.96) 100%)' }}>
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-400 via-pink-500 via-fuchsia-500 via-violet-500 to-teal-400" />
+        <div className="flex items-center gap-3 relative">
+          <div className="bg-white rounded-xl p-1.5 shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/40">
+            <img src="/logo.jpg" alt="Goldenray Energy NZ" className="h-11 w-auto object-contain" />
           </div>
-          <span className="text-base font-extrabold font-display">Golden<span className="text-amber-500">Ray</span></span>
+          <div className="leading-tight">
+            <div className="text-[14px] font-extrabold font-display tracking-tight text-white">GOLDENRAY <span className="bg-gradient-to-r from-amber-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">ENERGY NZ</span></div>
+            <div className="text-[9px] text-amber-200/80 italic">Powering a Sustainable Future</div>
+          </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 relative">
           {['Products', 'How It Works', 'Calculator', 'Case Studies', 'Testimonials', 'FAQ', 'Contact'].map(l => (
-            <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm text-gray-500 hover:text-amber-500 transition">{l}</a>
+            <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm text-gray-200 hover:text-amber-300 font-medium transition">{l}</a>
           ))}
           <Link to="/login">
-            <Button variant="dark" size="sm" icon={Lock}>Employee Login</Button>
+            <Button size="sm" icon={Lock}>Employee Login</Button>
           </Link>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="min-h-screen flex items-center px-16 bg-gradient-to-b from-amber-50 via-white to-emerald-50/30 relative overflow-hidden">
-        <div className="absolute top-[8%] right-[5%] opacity-[0.06] animate-spin-slow">
+      <section className="min-h-screen flex items-center px-16 bg-mesh-vibrant relative overflow-hidden">
+        <div className="absolute -top-20 -left-20 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-pink-400 to-fuchsia-500 opacity-25 blur-3xl animate-blob" />
+        <div className="absolute top-[10%] right-[-80px] w-[460px] h-[460px] rounded-full bg-gradient-to-br from-amber-400 to-orange-500 opacity-25 blur-3xl animate-blob-delay-2" />
+        <div className="absolute bottom-[-100px] left-[30%] w-[400px] h-[400px] rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 opacity-20 blur-3xl animate-blob-delay-4" />
+        <div className="absolute top-[8%] right-[5%] opacity-[0.08] animate-spin-slow">
           <svg viewBox="0 0 200 200" className="w-[480px]">
             {Array.from({ length: 12 }).map((_, i) => {
               const a = i * 30 * Math.PI / 180;
-              return <line key={i} x1={100 + Math.cos(a) * 50} y1={100 + Math.sin(a) * 50} x2={100 + Math.cos(a) * 90} y2={100 + Math.sin(a) * 90} stroke="#f59e0b" strokeWidth="3" />;
+              return <line key={i} x1={100 + Math.cos(a) * 50} y1={100 + Math.sin(a) * 50} x2={100 + Math.cos(a) * 90} y2={100 + Math.sin(a) * 90} stroke="#ec4899" strokeWidth="3" />;
             })}
             <circle cx="100" cy="100" r="35" fill="#f59e0b" />
           </svg>
         </div>
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-amber-500/10 mb-6">
-            <Sparkles size={13} className="text-amber-500" />
-            <span className="text-xs font-semibold text-amber-700">NEW ZEALAND'S SOLAR ENERGY EXPERTS</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 via-pink-500/15 to-violet-500/15 border border-pink-200 mb-6 backdrop-blur">
+            <Sparkles size={13} className="text-pink-500" />
+            <span className="text-xs font-bold text-gradient-warm">NEW ZEALAND'S SOLAR ENERGY EXPERTS</span>
           </div>
           <h1 className="text-5xl font-extrabold font-display leading-tight mb-5">
-            Clean Energy for<br />Aotearoa's <span className="text-amber-500">Future</span>
+            Clean Energy for<br />Aotearoa's <span className="text-gradient-warm animate-gradient">Future</span>
           </h1>
-          <p className="text-base text-gray-500 leading-relaxed max-w-lg mb-8">
-            From Kiwi homes to commercial installations — GoldenRay Energy delivers solar solutions with instant quotes, CO₂ tracking, and professional proposals.
+          <p className="text-base text-gray-600 leading-relaxed max-w-lg mb-8">
+            From Kiwi homes to commercial installations — <span className="font-semibold text-pink-600">Goldenray Energy NZ</span> delivers solar solutions with instant quotes, CO₂ tracking, and professional proposals.
           </p>
           <div className="flex gap-3">
             <a href="#calculator"><Button size="lg" icon={Zap}>Get Free Quote</Button></a>
             <Button variant="dark" size="lg" icon={Phone}>+64 9 123 4567</Button>
           </div>
           <div className="flex gap-12 mt-12">
-            {[{ n: '1,800+', l: 'Installations' }, { n: '$32M+', l: 'Savings' }, { n: '12,000t', l: 'CO₂ Saved' }, { n: '98%', l: 'Satisfaction' }].map((s, i) => (
-              <div key={i}><div className="text-xl font-extrabold font-display">{s.n}</div><div className="text-xs text-gray-400 mt-0.5">{s.l}</div></div>
+            {[
+              { n: '1,800+', l: 'Installations', c: 'from-amber-500 to-orange-500' },
+              { n: '$32M+', l: 'Savings', c: 'from-pink-500 to-fuchsia-500' },
+              { n: '12,000t', l: 'CO₂ Saved', c: 'from-teal-500 to-emerald-500' },
+              { n: '98%', l: 'Satisfaction', c: 'from-violet-500 to-indigo-500' },
+            ].map((s, i) => (
+              <div key={i}>
+                <div className={`text-2xl font-extrabold font-display bg-gradient-to-br ${s.c} bg-clip-text text-transparent`}>{s.n}</div>
+                <div className="text-xs text-gray-500 mt-0.5 font-medium">{s.l}</div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Products */}
-      <section id="products" className="py-24 px-16">
+      <section id="products" className="py-24 px-16 bg-gradient-to-b from-white via-rose-50/40 to-white">
         <div className="text-center mb-12">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">PRODUCTS</div>
-          <h2 className="text-3xl font-extrabold font-display">Solar Solutions for Aotearoa</h2>
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-solar">PRODUCTS</div>
+          <h2 className="text-3xl font-extrabold font-display">Solar Solutions for <span className="text-gradient-warm">Aotearoa</span></h2>
         </div>
-        <div className="grid grid-cols-3 gap-4 max-w-5xl mx-auto">
-          {[{ name: 'Home Rooftop', size: '3-10kW', price: 'From $8,500', color: '#2563eb' },
-            { name: 'Solar + Battery', size: '5-15kW', price: 'From $18,000', color: '#059669' },
-            { name: 'Commercial', size: '25-500kW', price: 'Custom Quote', color: '#7c3aed' }].map((p, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:-translate-y-1 transition-transform">
-              <div className="h-24 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${p.color}08, ${p.color}15)` }}>
-                <Sun size={32} style={{ color: p.color, opacity: 0.3 }} />
+        <div className="grid grid-cols-3 gap-5 max-w-5xl mx-auto">
+          {[
+            { name: 'Home Rooftop',    size: '3-10kW',    price: 'From $8,500',  priceColor: 'from-sky-500 to-indigo-500',     badge: 'from-sky-500 to-blue-600',         img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=400&fit=crop&auto=format&q=80',  alt: 'Rooftop solar panels on residential home' },
+            { name: 'Solar + Battery', size: '5-15kW',    price: 'From $18,000', priceColor: 'from-emerald-500 to-teal-500',   badge: 'from-emerald-500 to-teal-600',     img: 'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=800&h=400&fit=crop&auto=format&q=80',  alt: 'Home solar with battery storage' },
+            { name: 'Commercial',      size: '25-500kW',  price: 'Custom Quote', priceColor: 'from-fuchsia-500 to-violet-500', badge: 'from-fuchsia-500 to-violet-600',   img: 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=800&h=400&fit=crop&auto=format&q=80',  alt: 'Large commercial solar farm installation' },
+          ].map((p, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-100 transition-all duration-300 group">
+              <div className="h-44 relative overflow-hidden">
+                <img src={p.img} alt={p.alt} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-lg bg-gradient-to-r ${p.badge}`}>{p.size}</div>
               </div>
               <div className="p-5">
                 <h4 className="font-bold font-display mb-1">{p.name}</h4>
                 <p className="text-xs text-gray-400 mb-3">{p.size} system</p>
                 <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                  <span className="text-sm font-bold text-amber-500 font-display">{p.price}</span>
+                  <span className={`text-sm font-extrabold font-display bg-gradient-to-r ${p.priceColor} bg-clip-text text-transparent`}>{p.price}</span>
                   <a href="#calculator"><Button size="sm" icon={ArrowRight}>Quote</Button></a>
                 </div>
               </div>
@@ -227,28 +253,27 @@ export default function WebsitePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-24 px-16 bg-gray-50">
+      <section id="how-it-works" className="py-24 px-16 bg-gradient-to-br from-violet-50 via-white to-cyan-50">
         <div className="text-center mb-14">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">HOW IT WORKS</div>
-          <h2 className="text-3xl font-extrabold font-display">Solar in 4 Simple Steps</h2>
-          <p className="text-sm text-gray-400 mt-2 max-w-lg mx-auto">From first enquiry to powering your home — we handle everything for a seamless transition to solar.</p>
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-cool">HOW IT WORKS</div>
+          <h2 className="text-3xl font-extrabold font-display">Solar in <span className="text-gradient-warm">4 Simple Steps</span></h2>
+          <p className="text-sm text-gray-500 mt-2 max-w-lg mx-auto">From first enquiry to powering your home — we handle everything for a seamless transition to solar.</p>
         </div>
         <div className="max-w-5xl mx-auto grid grid-cols-4 gap-6 relative">
-          {/* Connecting line */}
-          <div className="absolute top-12 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-amber-300 via-amber-400 to-emerald-400 hidden md:block" />
+          <div className="absolute top-12 left-[12.5%] right-[12.5%] h-1 bg-gradient-to-r from-sky-400 via-pink-400 via-amber-400 to-emerald-400 hidden md:block rounded-full opacity-60" />
           {[
-            { step: '01', icon: Eye, title: 'Free Consultation', desc: 'We assess your energy usage, roof space, and goals. Get a personalised solar proposal within 24 hours.', color: '#2563eb' },
-            { step: '02', icon: Wrench, title: 'Custom Design', desc: 'Our engineers design the optimal system — panel layout, inverter sizing, and battery if needed.', color: '#d97706' },
-            { step: '03', icon: Truck, title: 'Professional Install', desc: 'Our certified installers handle everything — mounting, wiring, council consent, and grid connection.', color: '#7c3aed' },
-            { step: '04', icon: Power, title: 'Power On & Save', desc: 'Your system goes live! Monitor savings in real-time and enjoy decades of clean, free energy.', color: '#059669' },
+            { step: '01', icon: Eye,    title: 'Free Consultation',    desc: 'We assess your energy usage, roof space, and goals. Get a personalised solar proposal within 24 hours.', gradient: 'from-sky-400 to-blue-500',         ring: 'ring-sky-200' },
+            { step: '02', icon: Wrench, title: 'Custom Design',        desc: 'Our engineers design the optimal system — panel layout, inverter sizing, and battery if needed.',       gradient: 'from-pink-500 to-fuchsia-500',     ring: 'ring-pink-200' },
+            { step: '03', icon: Truck,  title: 'Professional Install', desc: 'Our certified installers handle everything — mounting, wiring, council consent, and grid connection.',  gradient: 'from-amber-500 to-orange-500',     ring: 'ring-amber-200' },
+            { step: '04', icon: Power,  title: 'Power On & Save',      desc: 'Your system goes live! Monitor savings in real-time and enjoy decades of clean, free energy.',           gradient: 'from-emerald-500 to-teal-500',     ring: 'ring-emerald-200' },
           ].map((s, i) => (
             <div key={i} className="relative text-center">
-              <div className="w-24 h-24 rounded-2xl mx-auto flex items-center justify-center mb-4 relative z-10" style={{ background: `linear-gradient(135deg, ${s.color}10, ${s.color}20)` }}>
-                <s.icon size={32} style={{ color: s.color }} />
+              <div className={`w-24 h-24 rounded-2xl mx-auto flex items-center justify-center mb-4 relative z-10 bg-gradient-to-br ${s.gradient} shadow-xl ring-4 ${s.ring} hover:scale-110 hover:rotate-3 transition-transform duration-300`}>
+                <s.icon size={34} className="text-white drop-shadow" />
               </div>
-              <div className="text-[10px] font-bold tracking-widest text-amber-500 mb-1">STEP {s.step}</div>
+              <div className={`text-[10px] font-extrabold tracking-widest mb-1 bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent`}>STEP {s.step}</div>
               <h4 className="text-sm font-bold font-display mb-2">{s.title}</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">{s.desc}</p>
+              <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
             </div>
           ))}
         </div>
@@ -258,11 +283,13 @@ export default function WebsitePage() {
       </section>
 
       {/* ═══════ SOLAR CALCULATOR ═══════ */}
-      <section id="calculator" className="py-24 px-6 md:px-16 bg-gradient-to-b from-amber-50/60 via-white to-emerald-50/30">
-        <div className="text-center mb-12">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">FREE SOLAR CALCULATOR</div>
-          <h2 className="text-3xl font-extrabold font-display">Get Your Instant Solar Quote</h2>
-          <p className="text-sm text-gray-400 mt-2 max-w-lg mx-auto">Enter your electricity details and we'll calculate exactly how much you can save with solar — plus download a detailed PDF quote.</p>
+      <section id="calculator" className="py-24 px-6 md:px-16 bg-mesh-calc relative overflow-hidden">
+        <div className="absolute top-20 -right-32 w-80 h-80 rounded-full bg-gradient-to-br from-pink-300 to-fuchsia-400 opacity-20 blur-3xl animate-blob" />
+        <div className="absolute bottom-20 -left-32 w-80 h-80 rounded-full bg-gradient-to-br from-teal-300 to-cyan-400 opacity-20 blur-3xl animate-blob-delay-2" />
+        <div className="text-center mb-12 relative">
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-warm">FREE SOLAR CALCULATOR</div>
+          <h2 className="text-3xl font-extrabold font-display">Get Your <span className="text-gradient-warm">Instant Solar Quote</span></h2>
+          <p className="text-sm text-gray-500 mt-2 max-w-lg mx-auto">Enter your electricity details and we'll calculate exactly how much you can save with solar — plus download a detailed PDF quote.</p>
         </div>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -423,8 +450,8 @@ export default function WebsitePage() {
                   <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Power Bill Upload <span className="text-gray-300 font-normal">(optional)</span></label>
                   <label className="mt-1 flex items-center gap-2 w-full px-3 py-2.5 rounded-lg border border-dashed border-gray-300 hover:border-amber-400 hover:bg-amber-50/30 cursor-pointer transition text-sm text-gray-400">
                     <Upload size={14} className="flex-shrink-0" />
-                    <span className="truncate">{powerBillFile ? powerBillFile.name : 'Click to upload bill (PDF, JPG)'}</span>
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setPowerBillFile(e.target.files[0] || null)} className="hidden" />
+                    <span className="truncate">{powerBillFile ? powerBillFile.name : 'Click to upload bill (PDF only)'}</span>
+                    <input type="file" accept=".pdf" onChange={e => setPowerBillFile(e.target.files[0] || null)} className="hidden" />
                   </label>
                 </div>
                 <div>
@@ -645,21 +672,29 @@ export default function WebsitePage() {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-24 px-16 bg-gray-50">
+      <section id="testimonials" className="py-24 px-16 bg-gradient-to-br from-pink-50 via-amber-50/40 to-violet-50">
         <div className="text-center mb-12">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">TESTIMONIALS</div>
-          <h2 className="text-3xl font-extrabold font-display">Loved by Kiwis</h2>
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-solar">TESTIMONIALS</div>
+          <h2 className="text-3xl font-extrabold font-display">Loved by <span className="text-gradient-warm">Kiwis</span></h2>
         </div>
-        <div className="grid grid-cols-3 gap-4 max-w-5xl mx-auto">
-          {[{ name: 'Tane & Maia', text: '6kW system dropped our bill from $380 to $45/month!', loc: 'Auckland' },
-            { name: 'Sarah Chen', text: '120kW powers our winery. $4,000+/month savings.', loc: 'Marlborough' },
-            { name: 'Dave O\'Brien', text: 'Off-grid was the best decision. No more power bills!', loc: 'Waikato' }].map((t, i) => (
-            <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100">
-              <div className="flex gap-0.5 mb-3">{Array.from({ length: 5 }).map((_, j) => <Star key={j} size={12} fill="#f59e0b" color="#f59e0b" />)}</div>
-              <p className="text-sm text-gray-500 italic leading-relaxed mb-4">"{t.text}"</p>
-              <div className="pt-3 border-t border-gray-100">
-                <div className="text-sm font-semibold">{t.name}</div>
-                <div className="text-xs text-gray-400">{t.loc}</div>
+        <div className="grid grid-cols-3 gap-5 max-w-5xl mx-auto">
+          {[
+            { name: 'Tane & Maia',  text: '6kW system dropped our bill from $380 to $45/month!', loc: 'Auckland',     accent: 'from-pink-500 to-rose-500',      bg: 'from-pink-50/70 to-white' },
+            { name: 'Sarah Chen',   text: '120kW powers our winery. $4,000+/month savings.',     loc: 'Marlborough',  accent: 'from-amber-500 to-orange-500',   bg: 'from-amber-50/70 to-white' },
+            { name: 'Dave O\'Brien', text: 'Off-grid was the best decision. No more power bills!', loc: 'Waikato',    accent: 'from-teal-500 to-cyan-500',      bg: 'from-teal-50/70 to-white' },
+          ].map((t, i) => (
+            <div key={i} className={`bg-gradient-to-br ${t.bg} rounded-2xl p-6 border border-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden`}>
+              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${t.accent}`} />
+              <div className="flex gap-0.5 mb-3">{Array.from({ length: 5 }).map((_, j) => <Star key={j} size={13} fill="#f59e0b" color="#f59e0b" />)}</div>
+              <p className="text-sm text-gray-700 italic leading-relaxed mb-4">"{t.text}"</p>
+              <div className="pt-3 border-t border-gray-100 flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${t.accent} flex items-center justify-center text-white text-[11px] font-extrabold shadow`}>
+                  {t.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">{t.name}</div>
+                  <div className="text-xs text-gray-400">{t.loc}</div>
+                </div>
               </div>
             </div>
           ))}
@@ -667,11 +702,11 @@ export default function WebsitePage() {
       </section>
 
       {/* Case Studies */}
-      <section id="case-studies" className="py-24 px-16">
+      <section id="case-studies" className="py-24 px-16 bg-gradient-to-b from-white via-cyan-50/30 to-white">
         <div className="text-center mb-12">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">CASE STUDIES</div>
-          <h2 className="text-3xl font-extrabold font-display">Real Projects, Real Savings</h2>
-          <p className="text-sm text-gray-400 mt-2 max-w-lg mx-auto">Dive into the facts and figures behind some of our solar installations across New Zealand.</p>
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-cool">CASE STUDIES</div>
+          <h2 className="text-3xl font-extrabold font-display">Real Projects, <span className="text-gradient-warm">Real Savings</span></h2>
+          <p className="text-sm text-gray-500 mt-2 max-w-lg mx-auto">Dive into the facts and figures behind some of our solar installations across New Zealand.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {[
@@ -680,12 +715,10 @@ export default function WebsitePage() {
             { type: 'Community', title: 'Rauawaawa Kaumātua Trust', system: '35 kW', panels: 64, before: '$1,800/mo', after: '$190/mo', savings: '$385,000+', payback: '5.1 years', co2: '8.4t/yr', color: '#7c3aed', gradient: 'from-violet-50 to-purple-50' },
           ].map((cs, i) => (
             <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:-translate-y-1 transition-transform">
-              <div className={`h-32 bg-gradient-to-br ${cs.gradient} flex items-center justify-center relative`}>
-                <div className="text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: cs.color }}>{cs.type}</div>
-                  <Sun size={36} style={{ color: cs.color, opacity: 0.25 }} className="mx-auto" />
-                </div>
-                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white" style={{ background: cs.color }}>{cs.system}</div>
+              <div className="h-44 overflow-hidden relative">
+                {CASE_STUDY_IMAGES[i]}
+                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-md" style={{ background: cs.color }}>{cs.system}</div>
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-md" style={{ background: cs.color + 'cc' }}>{cs.type}</div>
               </div>
               <div className="p-5">
                 <h4 className="font-bold font-display text-base mb-3">{cs.title}</h4>
@@ -724,34 +757,39 @@ export default function WebsitePage() {
       </section>
 
       {/* Our Mission */}
-      <section className="py-24 px-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
+      <section className="py-24 px-16 text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #831843 65%, #7c2d12 100%)' }}>
+        <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-gradient-to-br from-pink-500 to-fuchsia-600 opacity-25 blur-3xl animate-blob" />
+        <div className="absolute -bottom-32 -right-20 w-[420px] h-[420px] rounded-full bg-gradient-to-br from-amber-500 to-orange-600 opacity-25 blur-3xl animate-blob-delay-2" />
+        <div className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 opacity-20 blur-3xl animate-blob-delay-4" />
+        <div className="absolute inset-0 opacity-10">
           <svg viewBox="0 0 200 200" className="w-full h-full">
             {Array.from({ length: 12 }).map((_, i) => {
               const a = i * 30 * Math.PI / 180;
-              return <line key={i} x1={100 + Math.cos(a) * 50} y1={100 + Math.sin(a) * 50} x2={100 + Math.cos(a) * 90} y2={100 + Math.sin(a) * 90} stroke="#f59e0b" strokeWidth="3" />;
+              return <line key={i} x1={100 + Math.cos(a) * 50} y1={100 + Math.sin(a) * 50} x2={100 + Math.cos(a) * 90} y2={100 + Math.sin(a) * 90} stroke="#fbbf24" strokeWidth="3" />;
             })}
-            <circle cx="100" cy="100" r="35" fill="#f59e0b" />
+            <circle cx="100" cy="100" r="35" fill="#fbbf24" />
           </svg>
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="text-xs font-bold text-amber-400 tracking-widest mb-3">OUR MISSION</div>
-          <h2 className="text-3xl font-extrabold font-display mb-6">Powering Aotearoa with Trusted Solar</h2>
-          <p className="text-base text-gray-300 leading-relaxed max-w-2xl mx-auto mb-8">
+          <div className="inline-block text-xs font-extrabold tracking-widest mb-3 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-pink-400 to-violet-400 bg-clip-text text-transparent border border-pink-400/30 backdrop-blur">OUR MISSION</div>
+          <h2 className="text-4xl font-extrabold font-display mb-6">
+            Powering <span className="bg-gradient-to-r from-amber-300 via-pink-300 to-violet-300 bg-clip-text text-transparent animate-gradient">Aotearoa</span> with Trusted Solar
+          </h2>
+          <p className="text-base text-gray-200 leading-relaxed max-w-2xl mx-auto mb-10">
             Our mission is to power New Zealand with trusted solar — delivering real savings, lower emissions, and giving back Kiwi's energy independence. We believe every home and business deserves access to clean, affordable energy.
           </p>
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
             {[
-              { icon: DollarSign, label: 'Real Savings', desc: 'Average 85% reduction in electricity bills' },
-              { icon: Leaf, label: 'Lower Emissions', desc: '12,000+ tonnes of CO₂ offset and counting' },
-              { icon: Shield, label: 'Energy Independence', desc: 'Protection from rising electricity costs' },
+              { icon: DollarSign, label: 'Real Savings',         desc: 'Average 85% reduction in electricity bills', gradient: 'from-amber-400 to-orange-500' },
+              { icon: Leaf,       label: 'Lower Emissions',      desc: '12,000+ tonnes of CO₂ offset and counting',   gradient: 'from-emerald-400 to-teal-500' },
+              { icon: Shield,     label: 'Energy Independence',  desc: 'Protection from rising electricity costs',    gradient: 'from-pink-400 to-fuchsia-500' },
             ].map((m, i) => (
-              <div key={i} className="text-center">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mx-auto mb-3">
-                  <m.icon size={20} className="text-amber-400" />
+              <div key={i} className="text-center group">
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${m.gradient} flex items-center justify-center mx-auto mb-3 shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                  <m.icon size={22} className="text-white drop-shadow" />
                 </div>
                 <div className="text-sm font-bold mb-1">{m.label}</div>
-                <div className="text-[11px] text-gray-400">{m.desc}</div>
+                <div className="text-[11px] text-gray-300">{m.desc}</div>
               </div>
             ))}
           </div>
@@ -759,21 +797,21 @@ export default function WebsitePage() {
       </section>
 
       {/* Partners & Certifications */}
-      <section className="py-16 px-16 bg-white">
+      <section className="py-16 px-16 bg-gradient-to-b from-white via-amber-50/40 to-white">
         <div className="text-center mb-10">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">TRUSTED BY</div>
-          <h2 className="text-2xl font-extrabold font-display">Our Partners & Certifications</h2>
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-solar">TRUSTED BY</div>
+          <h2 className="text-2xl font-extrabold font-display">Our Partners & <span className="text-gradient-warm">Certifications</span></h2>
         </div>
         <div className="max-w-4xl mx-auto grid grid-cols-3 md:grid-cols-6 gap-4">
           {[
-            { name: 'SEANZ', desc: 'Sustainable Energy Association NZ', emoji: '🏛️' },
-            { name: 'EECA', desc: 'Energy Efficiency & Conservation Authority', emoji: '⚡' },
-            { name: 'CEC', desc: 'Clean Energy Council Approved', emoji: '✅' },
-            { name: 'Master Electricians', desc: 'Licensed & Certified', emoji: '🔧' },
-            { name: 'SBN', desc: 'Sustainable Business Network', emoji: '🌿' },
-            { name: 'ENZ', desc: 'Electricity Networks NZ', emoji: '🔌' },
+            { name: 'SEANZ', desc: 'Sustainable Energy Association NZ', emoji: '🏛️', tint: 'hover:border-pink-300 hover:bg-pink-50/60' },
+            { name: 'EECA', desc: 'Energy Efficiency & Conservation Authority', emoji: '⚡', tint: 'hover:border-amber-300 hover:bg-amber-50/60' },
+            { name: 'CEC', desc: 'Clean Energy Council Approved', emoji: '✅', tint: 'hover:border-emerald-300 hover:bg-emerald-50/60' },
+            { name: 'Master Electricians', desc: 'Licensed & Certified', emoji: '🔧', tint: 'hover:border-sky-300 hover:bg-sky-50/60' },
+            { name: 'SBN', desc: 'Sustainable Business Network', emoji: '🌿', tint: 'hover:border-teal-300 hover:bg-teal-50/60' },
+            { name: 'ENZ', desc: 'Electricity Networks NZ', emoji: '🔌', tint: 'hover:border-violet-300 hover:bg-violet-50/60' },
           ].map((p, i) => (
-            <div key={i} className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+            <div key={i} className={`flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 ${p.tint} transition-all hover:-translate-y-1 hover:shadow-lg`}>
               <div className="text-2xl mb-2">{p.emoji}</div>
               <div className="text-[10px] font-bold text-gray-700 text-center">{p.name}</div>
               <div className="text-[8px] text-gray-400 text-center mt-0.5">{p.desc}</div>
@@ -783,10 +821,10 @@ export default function WebsitePage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-24 px-16 bg-gray-50">
+      <section id="faq" className="py-24 px-16 bg-gradient-to-br from-violet-50 via-pink-50/40 to-amber-50">
         <div className="text-center mb-12">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">FAQ</div>
-          <h2 className="text-3xl font-extrabold font-display">Frequently Asked Questions</h2>
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-warm">FAQ</div>
+          <h2 className="text-3xl font-extrabold font-display">Frequently Asked <span className="text-gradient-warm">Questions</span></h2>
         </div>
         <div className="max-w-3xl mx-auto space-y-3">
           {[
@@ -816,10 +854,10 @@ export default function WebsitePage() {
       </section>
 
       {/* Contact */}
-      <section id="contact" className="py-24 px-16">
+      <section id="contact" className="py-24 px-16 bg-gradient-to-br from-white via-teal-50/40 to-pink-50/30">
         <div className="text-center mb-12">
-          <div className="text-xs font-bold text-amber-500 tracking-widest mb-2">CONTACT</div>
-          <h2 className="text-3xl font-extrabold font-display">Kia Ora — Let's Talk Solar</h2>
+          <div className="text-xs font-extrabold tracking-widest mb-2 text-gradient-cool">CONTACT</div>
+          <h2 className="text-3xl font-extrabold font-display">Kia Ora — <span className="text-gradient-warm">Let's Talk Solar</span></h2>
         </div>
         <div className="max-w-3xl mx-auto grid grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl p-6 border border-gray-100 space-y-3">
@@ -836,33 +874,41 @@ export default function WebsitePage() {
             <Button block size="lg" icon={Send}>Send Enquiry</Button>
           </div>
           <div className="space-y-3">
-            {[{ icon: MapPin, text: 'Level 3, 45 Queen St, Auckland', color: '#2563eb' },
-              { icon: Phone, text: '+64 9 123 4567', color: '#059669' },
-              { icon: Mail, text: 'hello@goldenrayenergy.co.nz', color: '#d97706' },
-              { icon: Clock, text: 'Mon-Fri 8am-6pm, Sat 9am-1pm', color: '#7c3aed' }].map((c, i) => (
-              <div key={i} className="flex gap-3 p-4 bg-white rounded-xl border border-gray-100">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: c.color + '10' }}>
-                  <c.icon size={16} color={c.color} />
+            {[
+              { icon: MapPin, text: 'Level 3, 45 Queen St, Auckland',  gradient: 'from-sky-400 to-blue-500' },
+              { icon: Phone,  text: '+64 9 123 4567',                  gradient: 'from-emerald-500 to-teal-500' },
+              { icon: Mail,   text: 'hello@goldenrayenergy.co.nz',     gradient: 'from-amber-500 to-orange-500' },
+              { icon: Clock,  text: 'Mon-Fri 8am-6pm, Sat 9am-1pm',    gradient: 'from-pink-500 to-fuchsia-500' },
+            ].map((c, i) => (
+              <div key={i} className="flex gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${c.gradient} shadow-md`}>
+                  <c.icon size={17} className="text-white" />
                 </div>
-                <div className="flex items-center text-sm text-gray-600">{c.text}</div>
+                <div className="flex items-center text-sm text-gray-700 font-medium">{c.text}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Solar Chatbot — floating widget */}
+      {/* Floating widgets — SolarBot (right) + WhatsApp (left) */}
       <SolarChatbot />
+      <WhatsAppAssistant />
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 px-16 py-12">
-        <div className="max-w-5xl mx-auto grid grid-cols-4 gap-8 mb-8">
+      <footer className="text-gray-300 px-16 py-12 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #500724 70%, #7c2d12 100%)' }}>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-pink-500 via-fuchsia-500 via-violet-500 to-teal-400" />
+        <div className="absolute -top-20 right-1/4 w-72 h-72 rounded-full bg-gradient-to-br from-pink-500 to-violet-600 opacity-10 blur-3xl" />
+        <div className="max-w-5xl mx-auto grid grid-cols-4 gap-8 mb-8 relative">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                <Sun size={16} className="text-white" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-white rounded-xl p-1.5 shadow-lg shadow-amber-500/20 ring-2 ring-amber-300/30">
+                <img src="/logo.jpg" alt="Goldenray Energy NZ" className="h-12 w-auto object-contain" />
               </div>
-              <span className="text-base font-extrabold font-display text-white">Golden<span className="text-amber-500">Ray</span></span>
+              <div className="leading-tight">
+                <div className="text-sm font-extrabold font-display text-white tracking-tight">GOLDENRAY <span className="text-amber-400">ENERGY NZ</span></div>
+                <div className="text-[9px] text-gray-400 italic">Powering a Sustainable Future</div>
+              </div>
             </div>
             <p className="text-xs leading-relaxed">Powering Aotearoa with trusted solar solutions since 2018. Real savings, lower emissions, energy independence.</p>
           </div>
@@ -902,7 +948,7 @@ export default function WebsitePage() {
           </div>
         </div>
         <div className="border-t border-gray-800 pt-6 flex justify-between items-center">
-          <span className="text-[11px]">© 2026 GoldenRay Energy Ltd. All rights reserved. New Zealand.</span>
+          <span className="text-[11px]">© 2026 Goldenray Energy NZ Ltd. All rights reserved. New Zealand.</span>
           <div className="flex items-center gap-4">
             <span className="text-[11px] hover:text-amber-400 cursor-pointer transition">Privacy Policy</span>
             <span className="text-[11px] hover:text-amber-400 cursor-pointer transition">Terms of Service</span>

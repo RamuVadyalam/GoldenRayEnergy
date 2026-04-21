@@ -116,7 +116,7 @@ function buildQuoteHTML(c, q) {
   <!-- HEADER -->
   <div class="header">
     <div>
-      <div class="brand">☀️ GoldenRay Energy<span>Solar Solutions for New Zealand</span></div>
+      <div class="brand">☀️ GOLDENRAY ENERGY NZ<span>Powering a Sustainable Future</span></div>
     </div>
     <div class="quote-badge">
       <div>Solar Quote</div>
@@ -259,7 +259,7 @@ function buildQuoteHTML(c, q) {
   <!-- FOOTER -->
   <div class="footer">
     <div>
-      <strong style="color:#f59e0b">GoldenRay Energy Ltd</strong><br>
+      <strong style="color:#f59e0b">Goldenray Energy NZ Ltd</strong><br>
       Level 3, 45 Queen St, Auckland, New Zealand<br>
       <a href="mailto:hello@goldenrayenergy.co.nz">hello@goldenrayenergy.co.nz</a> | +64 9 123 4567
     </div>

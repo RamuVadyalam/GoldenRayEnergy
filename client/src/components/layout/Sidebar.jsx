@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sun, LayoutDashboard, Briefcase, TrendingUp, CheckCircle, GitBranch, Megaphone, Mail, Target, Users, Building2, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Briefcase, TrendingUp, CheckCircle, GitBranch, Megaphone, Mail, Target, Users, Building2, BarChart3, Settings, LogOut } from 'lucide-react';
 
 const NAV = [
   { header: 'Overview', items: [{ to: '/portal', label: 'Dashboard', icon: LayoutDashboard, end: true }] },
@@ -29,13 +29,12 @@ export default function Sidebar() {
 
   return (
     <aside className="w-56 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col">
-      <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-          <Sun size={16} className="text-white" />
-        </div>
-        <div>
-          <div className="text-sm font-extrabold font-display">Golden<span className="text-amber-500">Ray</span></div>
-          <div className="text-[9px] text-gray-400">CRM Portal</div>
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+        <img src="/logo.jpg" alt="Goldenray Energy NZ" className="h-10 w-auto object-contain" />
+        <div className="leading-tight min-w-0">
+          <div className="text-[11px] font-extrabold font-display tracking-tight truncate">GOLDENRAY <span className="text-gray-500">NZ</span></div>
+          <div className="text-[8px] text-gray-400 italic truncate">Sustainable Future</div>
+          <div className="text-[8px] text-amber-600 font-semibold">CRM Portal</div>
         </div>
       </div>
 

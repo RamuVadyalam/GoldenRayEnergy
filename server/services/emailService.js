@@ -30,11 +30,11 @@ export async function sendProposalEmail(proposal) {
   return t.sendMail({
     from: `"${env.email.fromName}" <${env.email.from}>`,
     to: proposal.email,
-    subject: `Your GoldenRay Energy Solar Quote - ${fmt(proposal.total_cost)}`,
+    subject: `Your Goldenray Energy NZ Solar Quote - ${fmt(proposal.total_cost)}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:auto">
       <div style="background:#f59e0b;color:#fff;padding:20px;border-radius:8px 8px 0 0">
-        <h1 style="margin:0;font-size:20px">☀️ GoldenRay Energy</h1>
-        <p style="margin:4px 0 0;opacity:.8">Your Solar Quote</p>
+        <h1 style="margin:0;font-size:20px">☀️ GOLDENRAY ENERGY NZ</h1>
+        <p style="margin:4px 0 0;opacity:.85;font-size:12px;font-style:italic">Powering a Sustainable Future</p>
       </div>
       <div style="padding:20px;border:1px solid #eee;border-top:0;border-radius:0 0 8px 8px">
         <p>Hi ${proposal.name},</p>
@@ -46,7 +46,7 @@ export async function sendProposalEmail(proposal) {
           <tr><td style="padding:8px">Payback Period</td><td style="padding:8px;font-weight:700">${proposal.payback_years} years</td></tr>
         </table>
         <p>Call us at <strong>+64 9 123 4567</strong> to get started.</p>
-        <p style="color:#888;font-size:12px">GoldenRay Energy Ltd, Auckland, NZ</p>
+        <p style="color:#888;font-size:12px">Goldenray Energy NZ Ltd, Auckland, New Zealand</p>
       </div>
     </div>`,
   });
@@ -65,10 +65,11 @@ export async function sendQuoteEmail(customer, calc, pdfBuffer, fileName) {
 
   return sendEmail({
     to: customer.email,
-    subject: `Your GoldenRay Solar Quote — ${fmt(calc.totalCost)} for ${calc.systemSize}kW System`,
+    subject: `Your Goldenray Energy NZ Solar Quote — ${fmt(calc.totalCost)} for ${calc.systemSize}kW System`,
     html: `<div style="font-family:'Segoe UI',sans-serif;max-width:620px;margin:auto;background:#fff">
       <div style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:24px 28px;border-radius:10px 10px 0 0">
-        <h1 style="margin:0;font-size:22px;font-weight:800">☀️ GoldenRay Energy</h1>
+        <h1 style="margin:0;font-size:22px;font-weight:800">☀️ GOLDENRAY ENERGY NZ</h1>
+        <p style="margin:6px 0 0;opacity:.9;font-size:12px;font-style:italic">Powering a Sustainable Future</p>
         <p style="margin:6px 0 0;opacity:.85;font-size:13px">Your Personalized Solar Quote</p>
       </div>
       <div style="padding:24px 28px;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 10px 10px">
@@ -94,7 +95,7 @@ export async function sendQuoteEmail(customer, calc, pdfBuffer, fileName) {
         </div>
 
         <p style="font-size:13px">Ready to take the next step? Call us at <strong>+64 9 123 4567</strong> or reply to this email.</p>
-        <p style="color:#9ca3af;font-size:11px;margin-top:20px;border-top:1px solid #f3f4f6;padding-top:12px">GoldenRay Energy Ltd | Auckland, New Zealand<br>hello@goldenrayenergy.co.nz | +64 9 123 4567<br><em>Quote valid for 30 days. Subject to site survey.</em></p>
+        <p style="color:#9ca3af;font-size:11px;margin-top:20px;border-top:1px solid #f3f4f6;padding-top:12px">Goldenray Energy NZ Ltd | Auckland, New Zealand<br>hello@goldenrayenergy.co.nz | +64 9 123 4567<br><em>Quote valid for 30 days. Subject to site survey.</em></p>
       </div>
     </div>`,
     attachments: pdfBuffer ? [{

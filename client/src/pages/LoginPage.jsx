@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sun, ArrowRight, ArrowLeft, Info } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Info } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 
@@ -35,13 +35,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-emerald-50">
       <div className="w-full max-w-md px-4">
-        <Link to="/" className="flex items-center gap-2.5 mb-7">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-            <Sun size={20} className="text-white" />
-          </div>
-          <div>
-            <div className="text-lg font-extrabold font-display">Golden<span className="text-amber-500">Ray</span>Energy</div>
-            <div className="text-[10px] text-gray-400">Employee Portal</div>
+        <Link to="/" className="flex items-center gap-3 mb-7">
+          <img src="/logo.jpg" alt="Goldenray Energy NZ" className="h-14 w-auto object-contain" />
+          <div className="leading-tight">
+            <div className="text-base font-extrabold font-display tracking-tight">GOLDENRAY <span className="text-gray-600">ENERGY NZ</span></div>
+            <div className="text-[10px] text-gray-400 italic">Powering a Sustainable Future</div>
+            <div className="text-[10px] text-amber-600 font-semibold mt-0.5">Employee Portal</div>
           </div>
         </Link>
 
