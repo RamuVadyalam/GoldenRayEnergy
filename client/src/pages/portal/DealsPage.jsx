@@ -5,12 +5,16 @@ import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import { fmt$, fmtDate, fmtDateLong } from '../../utils/format';
 import { DEAL_STAGES } from '../../utils/constants';
-import { Briefcase, DollarSign, Target, TrendingUp } from 'lucide-react';
+import Button from '../../components/ui/Button';
+import { NewDealModal, confirmDelete } from '../../components/portal/CreateModals';
+import { Briefcase, DollarSign, Target, TrendingUp, Plus, Pencil, Trash2 } from 'lucide-react';
 
 export default function DealsPage() {
   const [deals, setDeals] = useState([]);
   const [selDeal, setSelDeal] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [newOpen, setNewOpen] = useState(false);
+  const [editDeal, setEditDeal] = useState(null);
 
   useEffect(() => { api.get('/deals').then(r => setDeals(r.data)).finally(() => setLoading(false)); }, []);
 
@@ -18,6 +22,14 @@ export default function DealsPage() {
     await api.patch(`/deals/${id}`, { stage });
     setDeals(p => p.map(d => d.id === id ? { ...d, stage } : d));
     if (selDeal?.id === id) setSelDeal(p => ({ ...p, stage }));
+  };
+
+  const handleSaved = (d) => { setDeals(p => p.map(x => x.id === d.id ? { ...x, ...d } : x)); setSelDeal(null); setEditDeal(null); };
+  const handleDelete = async (d) => {
+    if (await confirmDelete({ url: '/deals', id: d.id, label: `deal "${d.name}"` })) {
+      setDeals(p => p.filter(x => x.id !== d.id));
+      setSelDeal(null);
+    }
   };
 
   const openDeals = deals.filter(d => !['closed_won', 'closed_lost'].includes(d.stage));
@@ -36,6 +48,13 @@ export default function DealsPage() {
 
   return (
     <div className="animate-fade-in space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-bold font-display">Deals</h2>
+          <p className="text-[11px] text-gray-400">Track and close opportunities across your pipeline.</p>
+        </div>
+        <Button icon={Plus} onClick={() => setNewOpen(true)}>New Deal</Button>
+      </div>
       <div className="grid grid-cols-4 gap-3">
         <KPI icon={Briefcase} label="Open pipeline" value={fmt$(pipelineVal)} sub={`${openDeals.length} deals`} accent="#6366f1" />
         <KPI icon={DollarSign} label="Closed won" value={fmt$(wonVal)} sub={`${wonDeals.length} deals`} accent="#10b981" />
@@ -80,6 +99,9 @@ export default function DealsPage() {
         })}
       </div>
 
+      <NewDealModal open={newOpen} onClose={() => setNewOpen(false)} onCreated={d => setDeals(p => [d, ...p])} />
+      <NewDealModal open={!!editDeal} onClose={() => setEditDeal(null)} initial={editDeal} onSaved={handleSaved} />
+
       <Modal open={!!selDeal} onClose={() => setSelDeal(null)} title={selDeal?.name}>
         {selDeal && (
           <div>
@@ -100,6 +122,14 @@ export default function DealsPage() {
                   <b className="text-gray-900">{l}:</b> {v}
                 </div>
               ))}
+            </div>
+            {selDeal.notes && <div className="mt-3 text-xs text-gray-500 bg-gray-50 rounded-lg p-3"><b className="text-gray-700">Notes:</b> {selDeal.notes}</div>}
+            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
+              <button onClick={() => handleDelete(selDeal)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition">
+                <Trash2 size={13} /> Delete
+              </button>
+              <Button icon={Pencil} onClick={() => { setEditDeal(selDeal); setSelDeal(null); }}>Edit</Button>
             </div>
           </div>
         )}

@@ -70,4 +70,12 @@ router.patch('/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const { error } = await supabaseAdmin.from('companies').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 export default router;

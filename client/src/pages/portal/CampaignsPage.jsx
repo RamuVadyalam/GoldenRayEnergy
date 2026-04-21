@@ -6,9 +6,11 @@ import Card from '../../components/ui/Card';
 import Tabs from '../../components/ui/Tabs';
 import DataTable from '../../components/ui/DataTable';
 import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
+import { NewCampaignModal, confirmDelete } from '../../components/portal/CreateModals';
 import { fmt$, pct } from '../../utils/format';
 import { CHART_COLORS } from '../../utils/constants';
-import { Megaphone, Users, DollarSign, TrendingUp } from 'lucide-react';
+import { Megaphone, Users, DollarSign, TrendingUp, Plus, Pencil, Trash2 } from 'lucide-react';
 
 const CTip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -19,6 +21,15 @@ export default function CampaignsPage() {
   const [tab, setTab] = useState('overview');
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newOpen, setNewOpen] = useState(false);
+  const [editCamp, setEditCamp] = useState(null);
+
+  const handleSaved = (c) => setCampaigns(p => p.map(x => x.id === c.id ? { ...x, ...c } : x));
+  const handleDelete = async (c) => {
+    if (await confirmDelete({ url: '/campaigns', id: c.id, label: `campaign "${c.name}"` })) {
+      setCampaigns(p => p.filter(x => x.id !== c.id));
+    }
+  };
 
   useEffect(() => { api.get('/campaigns').then(r => setCampaigns(r.data)).finally(() => setLoading(false)); }, []);
 
@@ -37,6 +48,13 @@ export default function CampaignsPage() {
 
   return (
     <div className="animate-fade-in space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-bold font-display">Campaigns</h2>
+          <p className="text-[11px] text-gray-400">Launch and track marketing campaigns across every channel.</p>
+        </div>
+        <Button icon={Plus} onClick={() => setNewOpen(true)}>New Campaign</Button>
+      </div>
       <Tabs tabs={[{ id: 'overview', label: 'Overview' }, { id: 'campaigns', label: 'All campaigns' }, { id: 'channels', label: 'Channels' }, { id: 'roi', label: 'ROI analysis' }]} active={tab} onChange={setTab} />
 
       {tab === 'overview' && <>
@@ -72,6 +90,12 @@ export default function CampaignsPage() {
         { label: 'Leads', render: r => <span className="text-xs font-semibold">{r.leads_generated}</span> },
         { label: 'Revenue', render: r => <span className="text-xs font-bold text-emerald-500">{fmt$(r.revenue_attributed)}</span> },
         { label: 'ROI', render: r => { const roi = Number(r.spent) > 0 ? Math.round((Number(r.revenue_attributed) - Number(r.spent)) / Number(r.spent) * 100) : 0; return <span className={`text-xs font-semibold ${roi > 100 ? 'text-emerald-500' : 'text-amber-500'}`}>{roi}%</span>; } },
+        { label: 'Actions', render: r => (
+          <div className="flex gap-1">
+            <button onClick={() => setEditCamp(r)} title="Edit" className="w-6 h-6 rounded bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center justify-center"><Pencil size={11} /></button>
+            <button onClick={() => handleDelete(r)} title="Delete" className="w-6 h-6 rounded bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center"><Trash2 size={11} /></button>
+          </div>
+        ) },
       ]} data={campaigns} />}
 
       {tab === 'channels' && <div className="grid grid-cols-3 gap-3">
@@ -88,6 +112,9 @@ export default function CampaignsPage() {
           </Card>
         ))}
       </div>}
+
+      <NewCampaignModal open={newOpen} onClose={() => setNewOpen(false)} onCreated={c => setCampaigns(p => [c, ...p])} />
+      <NewCampaignModal open={!!editCamp} onClose={() => setEditCamp(null)} initial={editCamp} onSaved={handleSaved} />
 
       {tab === 'roi' && <Card title="Campaign ROI comparison">
         <ResponsiveContainer width="100%" height={280}>
