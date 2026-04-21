@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 
 // Website pages
 import WebsitePage from './pages/WebsitePage';
+import FinancePage from './pages/FinancePage';
 import LoginPage from './pages/LoginPage';
 
 // Portal pages
@@ -30,6 +31,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<WebsitePage />} />
+      <Route path="/finance" element={<FinancePage />} />
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/portal" element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
