@@ -4,10 +4,11 @@ import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { fmt$, fmtDateLong, fmtDate } from '../../utils/format';
-import { PROJECT_STAGES, getStage, stageIndex, STAGE_CHECKLISTS, STAGE_TABS, TAB_CATALOG, IMPLEMENTED_TABS } from '../../utils/stages';
+import { PROJECT_STAGES, getStage, stageIndex, STAGE_CHECKLISTS, STAGE_TABS, TAB_CATALOG, IMPLEMENTED_TABS, stageCompletion } from '../../utils/stages';
+import { useAuth } from '../../context/AuthContext';
 import {
   ArrowLeft, Calendar, Activity as ActivityIcon, Sun, User as UserIcon,
-  Mail, Phone, MapPin, Zap, DollarSign, CheckSquare, Clock, ChevronDown,
+  Mail, Phone, MapPin, Zap, DollarSign, CheckSquare, Square, Clock, ChevronDown, Lock, ShieldAlert,
 } from 'lucide-react';
 
 function StageProgressBar({ currentStage }) {
@@ -42,31 +43,63 @@ function StageProgressBar({ currentStage }) {
   );
 }
 
-function StageMoveDropdown({ currentStage, onMove, disabled }) {
+function StageMoveDropdown({ currentStage, onMove, disabled, completion, isAdmin }) {
   const [open, setOpen] = useState(false);
+  const currentIdx = stageIndex(currentStage);
+  const forwardBlocked = !isAdmin && !completion.complete;
+  const missingCount = completion.total - completion.done;
+
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(v => !v)}
         disabled={disabled}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-amber-300 hover:bg-amber-50 text-xs font-semibold text-gray-700 disabled:opacity-50"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-brand-dark-1 hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-white/5 text-xs font-semibold text-gray-700 dark:text-gray-200 disabled:opacity-50"
       >
         Change stage <ChevronDown size={12} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 w-44">
-          {PROJECT_STAGES.map(s => (
-            <button
-              key={s.id}
-              disabled={s.id === currentStage}
-              onClick={() => { setOpen(false); onMove(s.id); }}
-              className="w-full text-left px-3 py-1.5 text-xs hover:bg-amber-50 text-gray-700 flex items-center gap-2 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-            >
-              <span>{s.icon}</span>
-              <span className="flex-1">{s.label}</span>
-              {s.id === currentStage && <span className="text-[9px] text-amber-600 font-bold">CURRENT</span>}
-            </button>
-          ))}
+        <div className="absolute right-0 top-full mt-1 bg-white dark:bg-brand-dark-1 border border-gray-200 dark:border-white/10 rounded-lg shadow-lg py-1 z-20 w-60">
+          {forwardBlocked && (
+            <div className="px-3 py-2 mb-1 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-500/20 text-[10px] text-amber-700 dark:text-amber-300 font-semibold flex items-center gap-1.5">
+              <Lock size={11} /> {missingCount} required item{missingCount > 1 ? 's' : ''} left in current stage
+            </div>
+          )}
+          {PROJECT_STAGES.map(s => {
+            const i = stageIndex(s.id);
+            const isCurrent = s.id === currentStage;
+            const isForwardMove = i > currentIdx;
+            const blocked = isCurrent || (isForwardMove && forwardBlocked);
+            return (
+              <button
+                key={s.id}
+                disabled={blocked}
+                onClick={() => { setOpen(false); onMove(s.id); }}
+                title={isCurrent ? 'Current stage' : blocked ? 'Complete required items first' : `Move to ${s.label}`}
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-amber-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 flex items-center gap-2 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+              >
+                <span>{s.icon}</span>
+                <span className="flex-1">{s.label}</span>
+                {isCurrent && <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold">CURRENT</span>}
+                {!isCurrent && isForwardMove && forwardBlocked && <Lock size={11} className="text-gray-300 dark:text-gray-500" />}
+              </button>
+            );
+          })}
+          {forwardBlocked && isAdmin && (
+            <>
+              <div className="my-1 border-t border-gray-100 dark:border-white/10" />
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  const next = PROJECT_STAGES[currentIdx + 1]?.id;
+                  if (next) onMove(next, { override: true });
+                }}
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center gap-2 font-semibold"
+              >
+                <ShieldAlert size={12} /> Admin: Force advance
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -89,6 +122,8 @@ function TabPlaceholder({ tabId, stageLabel }) {
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [activities, setActivities] = useState([]);
@@ -98,6 +133,7 @@ export default function ProjectDetailPage() {
   const [notesDraft, setNotesDraft] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [movingStage, setMovingStage] = useState(false);
+  const [checkSaving, setCheckSaving] = useState('');
   const [logOpen, setLogOpen] = useState(false);
 
   const loadProject = () => {
@@ -113,15 +149,33 @@ export default function ProjectDetailPage() {
   };
   useEffect(loadProject, [id]);
 
-  const moveStage = async (newStage) => {
+  const moveStage = async (newStage, opts = {}) => {
     setMovingStage(true);
     try {
-      await api.patch(`/projects/${id}`, { stage: newStage, previous_stage: project.stage });
+      await api.patch(`/projects/${id}`, {
+        stage: newStage,
+        previous_stage: project.stage,
+        override: !!opts.override,
+      });
       loadProject();
     } catch (e) {
       alert(e.response?.data?.error || 'Failed to change stage');
     } finally {
       setMovingStage(false);
+    }
+  };
+
+  const toggleChecklistItem = async (itemId, nextValue) => {
+    setCheckSaving(itemId);
+    setProject(p => ({ ...p, stage_progress: { ...(p.stage_progress || {}), [itemId]: nextValue } }));
+    try {
+      await api.patch(`/projects/${id}/checklist`, { itemId, completed: nextValue });
+    } catch (e) {
+      // revert on failure
+      setProject(p => ({ ...p, stage_progress: { ...(p.stage_progress || {}), [itemId]: !nextValue } }));
+      alert(e.response?.data?.error || 'Failed to save checklist');
+    } finally {
+      setCheckSaving('');
     }
   };
 
@@ -149,6 +203,8 @@ export default function ProjectDetailPage() {
   const checklist = STAGE_CHECKLISTS[project.stage] || { required: [], optional: [] };
   const stageTabIds = STAGE_TABS[project.stage] || ['manage'];
   const activeTab = stageTabIds.includes(tab) ? tab : stageTabIds[0];
+  const completion = stageCompletion(project.stage, project.stage_progress);
+  const progressPct = completion.total > 0 ? Math.round((completion.done / completion.total) * 100) : 100;
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -166,13 +222,19 @@ export default function ProjectDetailPage() {
           {project.sub_status && <Badge color="#ef4444">{project.sub_status}</Badge>}
         </div>
         <div className="flex items-center gap-2">
-          <StageMoveDropdown currentStage={project.stage} onMove={moveStage} disabled={movingStage} />
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-amber-300 hover:bg-amber-50 text-xs font-semibold text-gray-700">
+          <StageMoveDropdown
+            currentStage={project.stage}
+            onMove={moveStage}
+            disabled={movingStage}
+            completion={completion}
+            isAdmin={isAdmin}
+          />
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-brand-dark-1 hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-white/5 text-xs font-semibold text-gray-700 dark:text-gray-200">
             <Calendar size={13} /> Schedule
           </button>
           <button
             onClick={() => setLogOpen(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-amber-300 hover:bg-amber-50 text-xs font-semibold text-gray-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-brand-dark-1 hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-white/5 text-xs font-semibold text-gray-700 dark:text-gray-200"
           >
             <ActivityIcon size={13} /> Activity Log ({activities.length})
           </button>
@@ -276,29 +338,76 @@ export default function ProjectDetailPage() {
       {activeTab === 'manage' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
-            <Card title={`${stage.label} checklist`} subtitle="Informational — track progress in this stage">
-              <div className="space-y-3">
+            <Card
+              title={`${stage.label} checklist`}
+              subtitle={completion.total > 0
+                ? `${completion.done} of ${completion.total} required · ${completion.complete ? 'ready to advance' : 'blocking next stage'}`
+                : 'No required items for this stage'}
+            >
+              {completion.total > 0 && (
+                <div className="mb-4">
+                  <div className="h-1.5 rounded-full bg-gray-100 dark:bg-white/5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${completion.complete ? 'bg-emerald-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}
+                      style={{ width: `${progressPct}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="space-y-4">
                 <div>
-                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Required</div>
-                  <ul className="space-y-1">
-                    {checklist.required.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-gray-700">
-                        <CheckSquare size={13} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                  <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Required</div>
+                  <ul className="space-y-1.5">
+                    {checklist.required.map(item => {
+                      const done = project.stage_progress?.[item.id] === true;
+                      const saving = checkSaving === item.id;
+                      return (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => toggleChecklistItem(item.id, !done)}
+                            disabled={saving}
+                            className={`w-full flex items-start gap-2 text-left text-xs rounded-md px-2 py-1.5 transition
+                              ${done
+                                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-gray-700 dark:text-gray-200'
+                                : 'hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200'}
+                              ${saving ? 'opacity-60' : ''}`}
+                          >
+                            {done
+                              ? <CheckSquare size={14} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                              : <Square size={14} className="text-amber-400 dark:text-amber-500 mt-0.5 flex-shrink-0" />}
+                            <span className={done ? 'line-through text-gray-400 dark:text-gray-500' : ''}>{item.label}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
                 {checklist.optional.length > 0 && (
                   <div>
-                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Optional</div>
-                    <ul className="space-y-1">
-                      {checklist.optional.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-gray-500">
-                          <CheckSquare size={13} className="text-gray-300 mt-0.5 flex-shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
+                    <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Optional</div>
+                    <ul className="space-y-1.5">
+                      {checklist.optional.map(item => {
+                        const done = project.stage_progress?.[item.id] === true;
+                        const saving = checkSaving === item.id;
+                        return (
+                          <li key={item.id}>
+                            <button
+                              onClick={() => toggleChecklistItem(item.id, !done)}
+                              disabled={saving}
+                              className={`w-full flex items-start gap-2 text-left text-xs rounded-md px-2 py-1.5 transition
+                                ${done
+                                  ? 'bg-emerald-50/50 dark:bg-emerald-500/5 text-gray-500 dark:text-gray-400'
+                                  : 'hover:bg-gray-50 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400'}
+                                ${saving ? 'opacity-60' : ''}`}
+                            >
+                              {done
+                                ? <CheckSquare size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />
+                                : <Square size={14} className="text-gray-300 dark:text-gray-600 mt-0.5 flex-shrink-0" />}
+                              <span className={done ? 'line-through' : ''}>{item.label}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}

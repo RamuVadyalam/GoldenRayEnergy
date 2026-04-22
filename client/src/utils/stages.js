@@ -41,30 +41,91 @@ export const STAGE_TABS = {
 // Which tabs are fully implemented in Phase 1 (rest render a placeholder)
 export const IMPLEMENTED_TABS = new Set(['manage']);
 
-// Per-stage guidance shown in the Manage tab (Phase 1 — informational checklist)
+// Per-stage guidance shown in the Manage tab.
+// Required items gate forward stage transitions (admins can override).
 export const STAGE_CHECKLISTS = {
   new: {
-    required: ['Assign owner', 'Call customer within 24h', 'Qualify lead (yes/no)'],
-    optional: ['Enrich contact data', 'Add tags'],
+    required: [
+      { id: 'new.owner',   label: 'Assign owner' },
+      { id: 'new.call',    label: 'Call customer within 24h' },
+      { id: 'new.qualify', label: 'Qualify lead (yes/no)' },
+    ],
+    optional: [
+      { id: 'new.enrich', label: 'Enrich contact data' },
+      { id: 'new.tags',   label: 'Add tags' },
+    ],
   },
   design: {
-    required: ['Upload ≥4 site photos', 'Enter roof data (pitch, orientation, area)', 'Generate system design', 'Run energy simulation'],
-    optional: ['Shading analysis', 'Drone photos', 'Structural engineer report'],
+    required: [
+      { id: 'design.photos',     label: 'Upload ≥4 site photos' },
+      { id: 'design.roof_data',  label: 'Enter roof data (pitch, orientation, area)' },
+      { id: 'design.system',     label: 'Generate system design' },
+      { id: 'design.simulation', label: 'Run energy simulation' },
+    ],
+    optional: [
+      { id: 'design.shading',    label: 'Shading analysis' },
+      { id: 'design.drone',      label: 'Drone photos' },
+      { id: 'design.structural', label: 'Structural engineer report' },
+    ],
   },
   selling: {
-    required: ['Generate proposal PDF', 'Share online proposal link', 'Send proposal by email', 'Schedule follow-up call'],
-    optional: ['Revise proposal (v2+)', 'In-person meeting', 'Manager approval if >$50k'],
+    required: [
+      { id: 'selling.proposal_pdf', label: 'Generate proposal PDF' },
+      { id: 'selling.online_link',  label: 'Share online proposal link' },
+      { id: 'selling.send_email',   label: 'Send proposal by email' },
+      { id: 'selling.followup',     label: 'Schedule follow-up call' },
+    ],
+    optional: [
+      { id: 'selling.revise',   label: 'Revise proposal (v2+)' },
+      { id: 'selling.meeting',  label: 'In-person meeting' },
+      { id: 'selling.approval', label: 'Manager approval if >$50k' },
+    ],
   },
   installation: {
-    required: ['Confirm deposit received', 'Schedule installation date', 'Assign crew lead', 'Generate SLD', 'Commission system', 'Collect final payment'],
-    optional: ['Pre-install site meeting', 'Customer walkthrough video'],
+    required: [
+      { id: 'install.deposit',    label: 'Confirm deposit received' },
+      { id: 'install.schedule',   label: 'Schedule installation date' },
+      { id: 'install.crew',       label: 'Assign crew lead' },
+      { id: 'install.sld',        label: 'Generate SLD' },
+      { id: 'install.commission', label: 'Commission system' },
+      { id: 'install.final_pay',  label: 'Collect final payment' },
+    ],
+    optional: [
+      { id: 'install.preinstall',  label: 'Pre-install site meeting' },
+      { id: 'install.walkthrough', label: 'Customer walkthrough video' },
+    ],
   },
   maintenance: {
-    required: ['6-month performance check', 'Annual maintenance visit', 'Monitor inverter errors'],
-    optional: ['Warranty claims', 'Customer training'],
+    required: [
+      { id: 'maint.6mo',     label: '6-month performance check' },
+      { id: 'maint.annual',  label: 'Annual maintenance visit' },
+      { id: 'maint.monitor', label: 'Monitor inverter errors' },
+    ],
+    optional: [
+      { id: 'maint.warranty', label: 'Warranty claims' },
+      { id: 'maint.training', label: 'Customer training' },
+    ],
   },
   exit: {
-    required: ['Settle final invoice', 'Send NPS survey'],
-    optional: ['Referral request', 'Case-study ask'],
+    required: [
+      { id: 'exit.invoice', label: 'Settle final invoice' },
+      { id: 'exit.nps',     label: 'Send NPS survey' },
+    ],
+    optional: [
+      { id: 'exit.referral',   label: 'Referral request' },
+      { id: 'exit.case_study', label: 'Case-study ask' },
+    ],
   },
 };
+
+// Compute completion for a stage given the stored progress map
+export function stageCompletion(stageId, stageProgress) {
+  const items = STAGE_CHECKLISTS[stageId]?.required || [];
+  const done = items.filter(i => stageProgress?.[i.id] === true).length;
+  return { done, total: items.length, complete: done === items.length };
+}
+
+// Is moving from `from` to `to` forward in the pipeline?
+export function isForward(fromStage, toStage) {
+  return stageIndex(toStage) > stageIndex(fromStage);
+}

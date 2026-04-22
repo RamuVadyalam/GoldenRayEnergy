@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { PROJECT_STAGES, getStage } from '../../utils/stages';
+import { PROJECT_STAGES, stageIndex, stageCompletion } from '../../utils/stages';
+import { useAuth } from '../../context/AuthContext';
 import { fmt$ } from '../../utils/format';
-import { Search, Briefcase, ChevronRight } from 'lucide-react';
+import { Search, Briefcase, ChevronRight, Lock } from 'lucide-react';
 
 function daysSince(date) {
   if (!date) return 0;
@@ -14,16 +15,20 @@ function initials(name = '') {
   return name.split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-function ProjectCard({ project, onMove, onOpen }) {
+function ProjectCard({ project, onMove, onOpen, isAdmin }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const customerName = project.contacts?.name || '—';
   const days = daysSince(project.stage_entered_at);
   const stale = days >= 7;
+  const currentIdx = stageIndex(project.stage);
+  const completion = stageCompletion(project.stage, project.stage_progress);
+  const forwardBlocked = !isAdmin && !completion.complete;
+  const missingCount = completion.total - completion.done;
 
-  const handleMove = async (e, newStage) => {
+  const handleMove = async (e, newStage, override = false) => {
     e.stopPropagation();
     setMenuOpen(false);
-    await onMove(project, newStage);
+    await onMove(project, newStage, override);
   };
 
   return (
@@ -67,18 +72,42 @@ function ProjectCard({ project, onMove, onOpen }) {
           {menuOpen && (
             <div
               onClick={e => e.stopPropagation()}
-              className="absolute right-0 bottom-full mb-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 w-40"
+              className="absolute right-0 bottom-full mb-1 bg-white dark:bg-brand-dark-1 border border-gray-200 dark:border-white/10 rounded-lg shadow-lg py-1 z-10 w-52"
             >
-              {PROJECT_STAGES.filter(s => s.id !== project.stage).map(s => (
-                <button
-                  key={s.id}
-                  onClick={e => handleMove(e, s.id)}
-                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-amber-50 text-gray-700 flex items-center gap-2"
-                >
-                  <span>{s.icon}</span>
-                  <span>{s.label}</span>
-                </button>
-              ))}
+              {forwardBlocked && (
+                <div className="px-3 py-1.5 mb-1 text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-500/20 flex items-center gap-1">
+                  <Lock size={10} /> {missingCount} required item{missingCount > 1 ? 's' : ''} left
+                </div>
+              )}
+              {PROJECT_STAGES.filter(s => s.id !== project.stage).map(s => {
+                const i = stageIndex(s.id);
+                const isForwardMove = i > currentIdx;
+                const blocked = isForwardMove && forwardBlocked;
+                return (
+                  <button
+                    key={s.id}
+                    disabled={blocked}
+                    onClick={e => handleMove(e, s.id)}
+                    title={blocked ? 'Complete required items first' : `Move to ${s.label}`}
+                    className="w-full text-left px-3 py-1.5 text-xs hover:bg-amber-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 flex items-center gap-2 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                  >
+                    <span>{s.icon}</span>
+                    <span className="flex-1">{s.label}</span>
+                    {blocked && <Lock size={10} className="text-gray-300 dark:text-gray-500" />}
+                  </button>
+                );
+              })}
+              {forwardBlocked && isAdmin && PROJECT_STAGES[currentIdx + 1] && (
+                <>
+                  <div className="my-1 border-t border-gray-100 dark:border-white/10" />
+                  <button
+                    onClick={e => handleMove(e, PROJECT_STAGES[currentIdx + 1].id, true)}
+                    className="w-full text-left px-3 py-1.5 text-[10px] hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 font-semibold"
+                  >
+                    Admin: Force advance
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -89,6 +118,8 @@ function ProjectCard({ project, onMove, onOpen }) {
 
 export default function ProjectsPage() {
   const nav = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [projects, setProjects] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -110,12 +141,13 @@ export default function ProjectsPage() {
 
   const byStage = (stageId) => filtered.filter(p => p.stage === stageId);
 
-  const moveStage = async (project, newStage) => {
+  const moveStage = async (project, newStage, override = false) => {
     setMoving(project.id);
     try {
       const { data } = await api.patch(`/projects/${project.id}`, {
         stage: newStage,
         previous_stage: project.stage,
+        override,
       });
       setProjects(prev => prev.map(p => p.id === project.id ? { ...p, ...data } : p));
     } catch (e) {
@@ -167,7 +199,7 @@ export default function ProjectsPage() {
                 ) : (
                   items.map(p => (
                     <div key={p.id} className={moving === p.id ? 'opacity-50 pointer-events-none' : ''}>
-                      <ProjectCard project={p} onMove={moveStage} onOpen={pr => nav(`/portal/projects/${pr.id}`)} />
+                      <ProjectCard project={p} onMove={moveStage} onOpen={pr => nav(`/portal/projects/${pr.id}`)} isAdmin={isAdmin} />
                     </div>
                   ))
                 )}

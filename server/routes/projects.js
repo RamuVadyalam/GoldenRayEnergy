@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.js';
 import { supabaseAdmin } from '../config/supabase.js';
-import { PROJECT_STAGES } from '../services/projectService.js';
+import { PROJECT_STAGES, missingRequiredItems } from '../services/projectService.js';
 
 const router = Router();
 router.use(authenticate);
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
         id, code, stage, sub_status, customer_id, owner_id,
         address, suburb, city, region, postcode,
         system_size_kw, panels, battery_kwh, system_type, estimated_value,
-        stage_entered_at, created_at,
+        stage_entered_at, stage_progress, created_at,
         contacts:customer_id ( id, name, email, phone ),
         users:owner_id       ( id, name, avatar )
       `)
@@ -72,7 +72,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update — supports stage transitions, owner, notes, sub_status
+// Update — supports stage transitions, owner, notes, sub_status.
+// Forward stage moves are gated by required-checklist completion; admin role + backward moves bypass the gate.
 router.patch('/:id', async (req, res) => {
   try {
     if (!supabaseAdmin) return res.status(503).json({ error: 'Database not configured.' });
@@ -85,6 +86,31 @@ router.patch('/:id', async (req, res) => {
       if (!PROJECT_STAGES.includes(stage)) {
         return res.status(400).json({ error: `Invalid stage. Must be one of: ${PROJECT_STAGES.join(', ')}` });
       }
+
+      // Load current stage + stage_progress to decide whether to gate
+      const { data: current, error: loadErr } = await supabaseAdmin
+        .from('projects')
+        .select('stage, stage_progress')
+        .eq('id', req.params.id)
+        .single();
+      if (loadErr) throw loadErr;
+
+      const fromIdx = PROJECT_STAGES.indexOf(current.stage);
+      const toIdx   = PROJECT_STAGES.indexOf(stage);
+      const isForward  = toIdx > fromIdx;
+      const isAdmin    = req.user?.role === 'admin';
+
+      if (isForward && !isAdmin) {
+        const missing = missingRequiredItems(current.stage, current.stage_progress || {});
+        if (missing.length) {
+          return res.status(409).json({
+            error: `Cannot advance from "${current.stage}" to "${stage}" — ${missing.length} required item(s) incomplete.`,
+            missing,
+            currentStage: current.stage,
+          });
+        }
+      }
+
       update.stage = stage;
       update.stage_entered_at = new Date().toISOString();
       stageChanged = true;
@@ -107,15 +133,54 @@ router.patch('/:id', async (req, res) => {
 
     // Log the stage change as an activity
     if (stageChanged) {
+      const isOverride = req.user?.role === 'admin';
       await supabaseAdmin.from('activities').insert({
         type:        'system',
-        description: `Project stage changed to ${stage}`,
+        description: `Project stage changed to ${stage}${isOverride && req.body.override ? ' (admin override)' : ''}`,
         project_id:  data.id,
         contact_id:  data.customer_id,
         user_id:     req.user?.id || null,
-        metadata:    { previous_stage: req.body.previous_stage || null, new_stage: stage },
+        metadata:    {
+          previous_stage: req.body.previous_stage || null,
+          new_stage:      stage,
+          override:       !!req.body.override,
+        },
       });
     }
+
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Toggle a checklist item's completion state
+// Body: { itemId: string, completed: boolean }
+router.patch('/:id/checklist', async (req, res) => {
+  try {
+    if (!supabaseAdmin) return res.status(503).json({ error: 'Database not configured.' });
+
+    const { itemId, completed } = req.body;
+    if (!itemId || typeof completed !== 'boolean') {
+      return res.status(400).json({ error: 'itemId (string) and completed (boolean) are required.' });
+    }
+
+    const { data: current, error: loadErr } = await supabaseAdmin
+      .from('projects')
+      .select('stage_progress')
+      .eq('id', req.params.id)
+      .single();
+    if (loadErr) throw loadErr;
+
+    const next = { ...(current.stage_progress || {}), [itemId]: completed };
+
+    const { data, error } = await supabaseAdmin
+      .from('projects')
+      .update({ stage_progress: next })
+      .eq('id', req.params.id)
+      .select('id, stage_progress')
+      .single();
+    if (error) throw error;
 
     res.json(data);
   } catch (e) {
