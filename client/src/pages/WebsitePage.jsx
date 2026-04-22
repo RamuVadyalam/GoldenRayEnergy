@@ -21,21 +21,20 @@ const CASE_STUDY_IMAGES = [
   <img key='com2' src='https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=600&h=220&fit=crop&auto=format&q=80' alt='Community solar installation' className='w-full h-full object-cover' />,
 ];
 
+const INITIAL_FORM = {
+  firstName: '', lastName: '', email: '', phone: '',
+  address: '', ownsHome: '', floors: '', roofType: '',
+  installationType: '', batteryOption: '',
+  callToDiscuss: '', installationTimeframe: '',
+  monthlyBill: '', electricityRate: '0.32',
+};
+const INITIAL_OTP = { sent: false, value: '', verified: false, loading: false, error: '', demoCode: '' };
+
 export default function WebsitePage() {
-  const [form, setForm] = useState({
-    firstName: '', lastName: '', email: '', phone: '',
-    address: '', ownsHome: '', floors: '', roofType: '',
-    installationType: '', batteryOption: '',
-    callToDiscuss: '', installationTimeframe: '',
-    monthlyBill: '', electricityRate: '0.32',
-  });
+  const [form, setForm] = useState(INITIAL_FORM);
   const [powerBillFile, setPowerBillFile] = useState(null);
-  const [calc, setCalc] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState('');
-  const [sent, setSent] = useState({});
   const [openFaq, setOpenFaq] = useState(null);
-  const [otpState, setOtpState] = useState({ sent: false, value: '', verified: false, loading: false, error: '', demoCode: '' });
+  const [otpState, setOtpState] = useState(INITIAL_OTP);
   const [submitState, setSubmitState] = useState({ loading: false, done: false, error: '', id: '' });
   const addressRef = useRef(null);
 
@@ -62,27 +61,19 @@ export default function WebsitePage() {
     }
   };
 
-  const getSystemType = () => {
-    if (form.installationType === 'commercial') return 'on-grid';
-    return form.batteryOption === 'with-battery' ? 'hybrid' : 'on-grid';
-  };
-
   const submitEnquiry = async () => {
     setSubmitState({ loading: true, done: false, error: '', id: '' });
     try {
-      const { data } = await axios.post('/api/quote/submit', { form, calculation: calc });
+      const { data } = await axios.post('/api/quote/submit', { form });
       setSubmitState({ loading: false, done: true, error: '', id: data.id });
+      setForm(INITIAL_FORM);
+      setPowerBillFile(null);
+      setOtpState(INITIAL_OTP);
+      setTimeout(() => document.getElementById('quote-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (e) {
       setSubmitState({ loading: false, done: false, error: e.response?.data?.error || 'Submission failed. Please try again.', id: '' });
     }
   };
-
-  const getCustomer = () => ({
-    name: [form.firstName, form.lastName].filter(Boolean).join(' '),
-    email: form.email,
-    phone: form.phone,
-    location: form.address,
-  });
 
   // Google Places Autocomplete — requires VITE_GOOGLE_MAPS_API_KEY in .env
   useEffect(() => {
@@ -105,53 +96,6 @@ export default function WebsitePage() {
     s.async = true; s.onload = init;
     document.head.appendChild(s);
   }, []);
-
-  const calculate = async () => {
-    if (!form.monthlyBill) return;
-    setLoading(true);
-    try {
-      const { data } = await axios.post('/api/quote/calculate', {
-        monthlyBill: parseFloat(form.monthlyBill),
-        electricityRate: parseFloat(form.electricityRate),
-        systemType: getSystemType(),
-      });
-      setCalc(data);
-      setSent({});
-      setTimeout(() => document.getElementById('quote-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-    } catch (e) { console.error(e); } finally { setLoading(false); }
-  };
-
-  const downloadPDF = async () => {
-    setSending('pdf');
-    try {
-      const customer = getCustomer();
-      const res = await axios.post('/api/quote/pdf', { customer, calculation: calc }, { responseType: 'blob' });
-      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-      const a = document.createElement('a'); a.href = url;
-      a.download = `GoldenRay-Quote-${(customer.name || 'Customer').replace(/\s+/g, '-')}.pdf`;
-      a.click(); URL.revokeObjectURL(url);
-      setSent(s => ({ ...s, pdf: true }));
-    } catch (e) { console.error(e); } finally { setSending(''); }
-  };
-
-  const sendEmail = async () => {
-    if (!form.email) return alert('Please enter your email address above');
-    setSending('email');
-    try {
-      await axios.post('/api/quote/send-email', { customer: getCustomer(), calculation: calc });
-      setSent(s => ({ ...s, email: true }));
-    } catch (e) { console.error(e); } finally { setSending(''); }
-  };
-
-  const sendWhatsApp = async () => {
-    if (!form.phone) return alert('Please enter your phone number above');
-    setSending('whatsapp');
-    try {
-      const { data } = await axios.post('/api/quote/whatsapp-link', { customer: getCustomer(), calculation: calc });
-      window.open(data.url, '_blank');
-      setSent(s => ({ ...s, whatsapp: true }));
-    } catch (e) { console.error(e); } finally { setSending(''); }
-  };
 
   return (
     <div className="bg-white font-body">
@@ -297,9 +241,9 @@ export default function WebsitePage() {
           <p className="text-sm text-gray-500 mt-2 max-w-lg mx-auto">Enter your electricity details and we'll calculate exactly how much you can save with solar — plus download a detailed PDF quote.</p>
         </div>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className={submitState.done ? 'max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6' : 'max-w-2xl mx-auto'}>
           {/* LEFT — Form */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className={`${submitState.done ? 'lg:col-span-2' : ''} space-y-4`}>
             {/* Personal Details */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               <h3 className="text-sm font-bold font-display mb-4 flex items-center gap-2"><User size={14} className="text-amber-500" /> Personal Details</h3>
@@ -400,8 +344,13 @@ export default function WebsitePage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Number of Floors</label>
-                    <input name="floors" type="number" min="1" max="20" placeholder="1" value={form.floors} onChange={handleChange}
-                      className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400 transition" />
+                    <select name="floors" value={form.floors} onChange={handleChange}
+                      className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400 transition bg-white">
+                      <option value="">Select floors</option>
+                      <option value="1">1 floor</option>
+                      <option value="2">2 floors</option>
+                      <option value="3+">3+ floors</option>
+                    </select>
                   </div>
                   <div>
                     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Roof Type</label>
@@ -428,7 +377,12 @@ export default function WebsitePage() {
                 <div>
                   <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2 block">Type of Installation</label>
                   <div className="grid grid-cols-2 gap-2">
-                    {[{ v: 'residential', icon: '🏠', label: 'Residential' }, { v: 'commercial', icon: '🏢', label: 'Commercial' }].map(t => (
+                    {[
+                      { v: 'residential', icon: '🏠', label: 'Residential' },
+                      { v: 'commercial',  icon: '🏢', label: 'Commercial' },
+                      { v: 'off-grid',    icon: '🔆', label: 'Off-Grid' },
+                      { v: 'ppa',         icon: '📄', label: 'PPA' },
+                    ].map(t => (
                       <label key={t.v} className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all font-semibold text-sm
                         ${form.installationType === t.v ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-300' : 'border-gray-200 hover:bg-gray-50'}`}>
                         <input type="radio" name="installationType" value={t.v} checked={form.installationType === t.v} onChange={handleChange} className="hidden" />
@@ -436,10 +390,22 @@ export default function WebsitePage() {
                       </label>
                     ))}
                   </div>
+                  {form.installationType === 'ppa' && (
+                    <p className="mt-2 text-[11px] text-gray-500 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Power Purchase Agreement — no upfront cost. You pay a discounted per-kWh rate for the energy the system produces.
+                    </p>
+                  )}
+                  {form.installationType === 'commercial' && (
+                    <p className="mt-2 text-[11px] text-gray-500 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Commercial installations are custom-quoted. Submit your details below and our team will contact you within 1 business day to design a system tailored to your site and usage.
+                    </p>
+                  )}
                 </div>
-                {form.installationType === 'residential' && (
+                {(form.installationType === 'residential' || form.installationType === 'off-grid') && (
                   <div>
-                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2 block">Battery Storage?</label>
+                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2 block">
+                      {form.installationType === 'off-grid' ? 'Off-Grid Battery' : 'Battery Storage?'}
+                    </label>
                     <div className="grid grid-cols-2 gap-2">
                       {[{ v: 'with-battery', icon: '🔋', label: 'With Battery' }, { v: 'without-battery', icon: '🔌', label: 'Without Battery' }].map(t => (
                         <label key={t.v} className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all font-semibold text-sm
@@ -492,10 +458,6 @@ export default function WebsitePage() {
                       className="w-full pl-7 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400 transition" />
                   </div>
                 </div>
-                <button onClick={calculate} disabled={!form.monthlyBill || loading}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm flex items-center justify-center gap-2 hover:from-amber-400 hover:to-orange-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200">
-                  {loading ? <><Loader2 size={16} className="animate-spin" /> Calculating...</> : <><Zap size={16} /> Get Free Quote</>}
-                </button>
               </div>
             </div>
 
@@ -503,176 +465,79 @@ export default function WebsitePage() {
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-6">
               <h3 className="text-sm font-bold font-display mb-1 flex items-center gap-2"><Send size={14} className="text-amber-500" /> Submit Your Enquiry</h3>
               <p className="text-[11px] text-gray-400 mb-4">We'll contact you within 24 hours with a personalised solar proposal.</p>
-
-              {submitState.done ? (
-                <div className="flex flex-col items-center gap-3 py-4">
-                  <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <CheckCircle size={28} className="text-emerald-500" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-emerald-700">Enquiry Submitted!</p>
-                    <p className="text-[11px] text-gray-500 mt-1">Thank you! Our team will reach out within 24 hours.<br />Reference ID: <span className="font-mono font-semibold text-amber-600">{submitState.id}</span></p>
-                  </div>
-                  <button onClick={() => setSubmitState({ loading: false, done: false, error: '', id: '' })}
-                    className="text-[11px] text-amber-500 underline hover:text-amber-600">Submit another enquiry</button>
-                </div>
-              ) : (
-                <>
-                  {submitState.error && (
-                    <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-[11px] text-red-600 font-medium">{submitState.error}</div>
-                  )}
-                  <button onClick={submitEnquiry} disabled={submitState.loading || (!form.firstName && !form.email && !form.phone)}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm flex items-center justify-center gap-2 hover:from-amber-400 hover:to-orange-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200">
-                    {submitState.loading ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : <><Send size={16} /> Submit Enquiry</>}
-                  </button>
-                  <p className="text-[9px] text-gray-400 text-center mt-2">No spam. We respect your privacy.</p>
-                </>
+              {submitState.error && (
+                <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-[11px] text-red-600 font-medium">{submitState.error}</div>
               )}
+              <button onClick={submitEnquiry} disabled={submitState.loading || (!form.firstName && !form.email && !form.phone)}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm flex items-center justify-center gap-2 hover:from-amber-400 hover:to-orange-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200">
+                {submitState.loading ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : <><Send size={16} /> Submit Enquiry</>}
+              </button>
+              <p className="text-[9px] text-gray-400 text-center mt-2">No spam. We respect your privacy.</p>
             </div>
           </div>
 
-          {/* RIGHT — Results */}
-          <div className="lg:col-span-3 space-y-4" id="quote-results">
-            {!calc ? (
-              <div className="bg-white rounded-2xl border border-gray-100 flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-20 h-20 rounded-full bg-amber-50 flex items-center justify-center mb-4">
-                  <Sun size={36} className="text-amber-400" />
+          {/* RIGHT — Appears only after a successful submit */}
+          {submitState.done && (
+            <div className="lg:col-span-3 space-y-4" id="quote-results">
+              {/* Success confirmation */}
+              <div className="bg-gradient-to-br from-emerald-50 via-white to-amber-50 rounded-2xl border border-emerald-200 p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle size={28} className="text-emerald-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-extrabold font-display text-emerald-700">Enquiry Submitted!</h3>
+                    <p className="text-[11px] text-gray-500">Thank you — our team will reach out within 24 hours.</p>
+                  </div>
                 </div>
-                <h3 className="text-base font-bold text-gray-600">Your solar quote will appear here</h3>
-                <p className="text-xs text-gray-400 mt-1 max-w-sm">Enter your monthly electricity bill and click "Get Free Quote" to see a detailed savings analysis.</p>
+                <div className="bg-white/60 rounded-lg px-3 py-2 border border-emerald-100">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Reference ID</div>
+                  <div className="font-mono text-sm font-semibold text-amber-600 break-all">{submitState.id}</div>
+                </div>
+                <button onClick={() => setSubmitState({ loading: false, done: false, error: '', id: '' })}
+                  className="mt-3 text-[11px] text-amber-500 underline hover:text-amber-600">Submit another enquiry</button>
               </div>
-            ) : (
-              <>
-                {/* System Overview */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6">
-                  <h3 className="text-sm font-bold font-display mb-4 flex items-center gap-2"><Sun size={14} className="text-amber-500" /> Your Solar System</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      { icon: '☀️', label: 'System Size', value: `${calc.systemSize} kW`, sub: `${calc.panels} panels` },
-                      { icon: '⚡', label: 'Annual Output', value: `${(calc.annualKwh/1000).toFixed(1)}k kWh`, sub: 'per year' },
-                      { icon: calc.batteryKwh > 0 ? '🔋' : '🔌', label: calc.batteryKwh > 0 ? 'Battery' : 'Type', value: calc.batteryKwh > 0 ? `${calc.batteryKwh} kWh` : form.systemType },
-                      { icon: '💰', label: 'Total Cost', value: fmt(calc.totalCost), sub: 'incl. GST' },
-                    ].map((s, i) => (
-                      <div key={i} className="bg-gray-50 rounded-xl p-3 text-center">
-                        <div className="text-xl mb-1">{s.icon}</div>
-                        <div className="text-[9px] text-gray-400 uppercase font-semibold tracking-wide">{s.label}</div>
-                        <div className="text-base font-extrabold text-gray-900 mt-0.5">{s.value}</div>
-                        {s.sub && <div className="text-[9px] text-gray-400">{s.sub}</div>}
+
+              {/* What happens next */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+                    <Sun size={26} className="text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold font-display">What happens next</h3>
+                    <p className="text-[11px] text-gray-400">A solar specialist will handle your enquiry personally.</p>
+                  </div>
+                </div>
+                <ol className="space-y-4">
+                  {[
+                    { n: 1, title: 'Details received', desc: 'Your enquiry is now in our team inbox.' },
+                    { n: 2, title: 'We design your system', desc: 'Our team analyses your bill, location, and roof to build a tailored solar + battery proposal.' },
+                    { n: 3, title: 'Personal call within 24 hours', desc: 'A specialist calls you with the full breakdown: system size, savings, payback, and a fixed quote.' },
+                    { n: 4, title: 'Zero obligation', desc: 'Review the proposal in your own time. No pressure, no spam.' },
+                  ].map(s => (
+                    <li key={s.n} className="flex gap-3">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{s.n}</div>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-800">{s.title}</div>
+                        <div className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{s.desc}</div>
                       </div>
-                    ))}
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-6 pt-5 border-t border-gray-100 grid grid-cols-2 gap-3 text-center">
+                  <div>
+                    <div className="text-lg font-extrabold text-amber-600">24 hrs</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wide">Response time</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-extrabold text-emerald-600">Free</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wide">No-obligation quote</div>
                   </div>
                 </div>
-
-                {/* Savings vs Traditional */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6">
-                  <h3 className="text-sm font-bold font-display mb-4 flex items-center gap-2"><TrendingUp size={14} className="text-emerald-500" /> Solar vs Traditional Electricity</h3>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                      <div className="text-[10px] font-bold text-red-500 uppercase">❌ Without Solar</div>
-                      <div className="text-2xl font-extrabold text-red-600 mt-1">{fmt(calc.traditionalCost)}</div>
-                      <div className="text-[10px] text-red-400">per year</div>
-                      <div className="text-xs text-red-500 font-semibold mt-2">25yr: {fmt(calc.traditionalCost * 25)}</div>
-                    </div>
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
-                      <div className="text-[10px] font-bold text-emerald-600 uppercase">✅ With Solar</div>
-                      <div className="text-2xl font-extrabold text-emerald-600 mt-1">{fmt(calc.traditionalCost - calc.annualSavings)}</div>
-                      <div className="text-[10px] text-emerald-400">remaining cost</div>
-                      <div className="text-xs text-emerald-600 font-semibold mt-2">Save {fmt(calc.annualSavings)}/yr ({calc.costReduction}%)</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      { label: 'Monthly Savings', value: fmt(calc.monthlySavings), color: 'text-emerald-600' },
-                      { label: 'Payback', value: `${calc.paybackYears} yrs`, color: 'text-amber-600' },
-                      { label: 'ROI', value: `${calc.roi}%`, color: 'text-emerald-600' },
-                      { label: '25-Year Savings', value: fmt(calc.lifetimeSavings), color: 'text-emerald-600' },
-                    ].map((s, i) => (
-                      <div key={i} className="bg-gray-50 rounded-xl p-3 text-center">
-                        <div className="text-[9px] text-gray-400 uppercase font-semibold">{s.label}</div>
-                        <div className={`text-lg font-extrabold mt-0.5 ${s.color}`}>{s.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Cost Breakdown */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6">
-                  <h3 className="text-sm font-bold font-display mb-4 flex items-center gap-2"><DollarSign size={14} className="text-amber-500" /> Cost Breakdown</h3>
-                  <div className="rounded-xl border border-gray-100 overflow-hidden">
-                    <table className="w-full text-xs">
-                      <thead><tr className="bg-gray-50"><th className="text-left px-4 py-2.5 font-semibold text-gray-500">Item</th><th className="text-right px-4 py-2.5 font-semibold text-gray-500">Cost</th></tr></thead>
-                      <tbody>
-                        {[
-                          [`Solar Panels (${calc.panels} × ${fmt(Math.round(calc.panelCost / calc.panels))})`, calc.panelCost],
-                          ['Inverter', calc.inverterCost],
-                          ['Installation & Labour', calc.laborCost],
-                          ...(calc.batteryKwh > 0 ? [[`Battery (${calc.batteryKwh} kWh)`, calc.batteryCost]] : []),
-                          ['Margin', calc.markup],
-                          ['GST (15%)', calc.tax],
-                        ].map(([name, cost], i) => (
-                          <tr key={i} className="border-t border-gray-50">
-                            <td className="px-4 py-2.5 text-gray-600">{name}</td>
-                            <td className="px-4 py-2.5 text-right font-semibold">{fmt(cost)}</td>
-                          </tr>
-                        ))}
-                        <tr className="bg-gray-900 text-white">
-                          <td className="px-4 py-3 font-bold">Total Investment</td>
-                          <td className="px-4 py-3 text-right font-extrabold text-base">{fmt(calc.totalCost)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Environmental Impact */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6">
-                  <h3 className="text-sm font-bold font-display mb-4 flex items-center gap-2"><Leaf size={14} className="text-emerald-500" /> Environmental Impact</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { icon: '🏭', val: `${calc.co2TonsYear}t`, label: 'CO₂ reduced/year', sub: `Lifetime: ${calc.lifetimeCo2}t` },
-                      { icon: '🌳', val: calc.treesEquivalent, label: 'Trees equivalent', sub: 'Every year' },
-                      { icon: '⚡', val: `${(calc.annualKwh/1000).toFixed(1)}k`, label: 'Clean kWh/year', sub: '100% renewable' },
-                    ].map((e, i) => (
-                      <div key={i} className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-4 text-center">
-                        <div className="text-2xl mb-1">{e.icon}</div>
-                        <div className="text-lg font-extrabold text-emerald-600">{e.val}</div>
-                        <div className="text-[10px] text-gray-500">{e.label}</div>
-                        <div className="text-[9px] text-emerald-500 mt-1">{e.sub}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Share / Export */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6">
-                  <h3 className="text-sm font-bold font-display mb-4 flex items-center gap-2"><Send size={14} className="text-amber-500" /> Get Your Detailed Quote</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <button onClick={downloadPDF} disabled={sending === 'pdf'}
-                      className={`flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 transition-all font-semibold text-sm
-                        ${sent.pdf ? 'border-emerald-400 bg-emerald-50 text-emerald-600' : 'border-gray-200 hover:border-amber-400 hover:bg-amber-50 text-gray-700'}`}>
-                      {sending === 'pdf' ? <Loader2 size={16} className="animate-spin" /> : sent.pdf ? <CheckCircle size={16} /> : <Download size={16} />}
-                      {sent.pdf ? 'Downloaded!' : 'Download PDF'}
-                    </button>
-                    <button onClick={sendEmail} disabled={sending === 'email' || !form.email}
-                      className={`flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 transition-all font-semibold text-sm
-                        ${sent.email ? 'border-emerald-400 bg-emerald-50 text-emerald-600' : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700'}
-                        ${!form.email ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {sending === 'email' ? <Loader2 size={16} className="animate-spin" /> : sent.email ? <CheckCircle size={16} /> : <Mail size={16} />}
-                      {sent.email ? 'Sent!' : 'Email Quote'}
-                    </button>
-                    <button onClick={sendWhatsApp} disabled={sending === 'whatsapp' || !form.phone}
-                      className={`flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 transition-all font-semibold text-sm
-                        ${sent.whatsapp ? 'border-emerald-400 bg-emerald-50 text-emerald-600' : 'border-gray-200 hover:border-green-400 hover:bg-green-50 text-gray-700'}
-                        ${!form.phone ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {sending === 'whatsapp' ? <Loader2 size={16} className="animate-spin" /> : sent.whatsapp ? <CheckCircle size={16} /> : <MessageCircle size={16} />}
-                      {sent.whatsapp ? 'Opened!' : 'WhatsApp'}
-                    </button>
-                  </div>
-                  {(!form.email && !form.phone) && <p className="text-[10px] text-amber-500 mt-2 text-center">Fill in your email or phone above to enable sharing</p>}
-                </div>
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

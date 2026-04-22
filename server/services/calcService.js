@@ -10,21 +10,30 @@ export function calculateSolar(input, customConfig = null) {
   const panels = Math.ceil((systemSize * 1000) / cfg.panelWatts);
 
   let batteryKwh = 0, batteryCost = 0;
-  if (input.systemType === 'off-grid') { batteryKwh = Math.ceil(dailyKwh * 1.5); batteryCost = batteryKwh * cfg.batteryCostPerKwh; }
+  if (input.systemType === 'off-grid') {
+    const withBattery = (input.batteryOption ?? 'with-battery') !== 'without-battery';
+    if (withBattery) { batteryKwh = Math.ceil(dailyKwh * 1.5); batteryCost = batteryKwh * cfg.batteryCostPerKwh; }
+  }
   else if (input.systemType === 'hybrid') { batteryKwh = Math.ceil(dailyKwh * 0.6); batteryCost = batteryKwh * cfg.batteryCostPerKwh; }
 
-  const panelCost = systemSize * cfg.costPerKw;
-  const inverterCost = panelCost * cfg.inverterPct / 100;
-  const laborCost = panelCost * cfg.laborPct / 100;
+  const isPPA = input.systemType === 'ppa';
+  const ppaDiscount = 0.25; // 25% below grid rate
+
+  const panelCost = isPPA ? 0 : systemSize * cfg.costPerKw;
+  const inverterCost = isPPA ? 0 : panelCost * cfg.inverterPct / 100;
+  const laborCost = isPPA ? 0 : panelCost * cfg.laborPct / 100;
   const subtotal = panelCost + inverterCost + laborCost + batteryCost;
-  const markup = subtotal * cfg.markup / 100;
-  const tax = (subtotal + markup) * cfg.taxRate / 100;
+  const markup = isPPA ? 0 : subtotal * cfg.markup / 100;
+  const tax = isPPA ? 0 : (subtotal + markup) * cfg.taxRate / 100;
   const totalCost = Math.round(subtotal + markup + tax);
 
-  const monthlySavings = Math.round(monthlyBill * 0.85);
+  const savingsRate = isPPA ? ppaDiscount : 0.85;
+  const monthlySavings = Math.round(monthlyBill * savingsRate);
   const annualSavings = monthlySavings * 12;
-  const paybackYears = Math.round(totalCost / annualSavings * 10) / 10;
-  const roi = Math.round((annualSavings * 25 - totalCost) / totalCost * 100);
+  const paybackYears = totalCost > 0 ? Math.round(totalCost / annualSavings * 10) / 10 : 0;
+  const roi = totalCost > 0
+    ? Math.round((annualSavings * 25 - totalCost) / totalCost * 100)
+    : 0;
   const annualKwh = Math.round(systemSize * cfg.sunHours * 365 * 0.8);
   const co2TonsYear = Math.round(annualKwh * cfg.co2Factor / 1000 * 10) / 10;
   const treesEquivalent = Math.round(co2TonsYear * 40);

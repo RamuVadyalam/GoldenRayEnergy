@@ -11,7 +11,13 @@ import {
 const SYSTEM_TYPES = [
   { value: 'on-grid', label: 'On-Grid', desc: 'Connected to the grid, sell excess power back' },
   { value: 'hybrid', label: 'Hybrid', desc: 'Grid + battery backup for power outages' },
-  { value: 'off-grid', label: 'Off-Grid', desc: 'Fully independent, complete battery storage' },
+  { value: 'off-grid', label: 'Off-Grid', desc: 'Fully independent solar — optional battery storage' },
+  { value: 'ppa', label: 'PPA', desc: 'Power Purchase Agreement — pay-per-kWh, no upfront cost' },
+];
+
+const BATTERY_OPTIONS = [
+  { value: 'with-battery', label: 'With Battery', desc: 'Sized to cover nighttime/overcast use' },
+  { value: 'without-battery', label: 'Without Battery', desc: 'Daytime-only generation, no storage' },
 ];
 
 function StatCard({ icon: Icon, label, value, sub, highlight }) {
@@ -31,6 +37,7 @@ export default function CalculatorPage() {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', location: '',
     monthlyBill: '', electricityRate: '0.32', systemType: 'on-grid',
+    batteryOption: 'with-battery',
   });
   const [calc, setCalc] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -47,6 +54,7 @@ export default function CalculatorPage() {
         monthlyBill: parseFloat(form.monthlyBill),
         electricityRate: parseFloat(form.electricityRate),
         systemType: form.systemType,
+        batteryOption: form.systemType === 'off-grid' ? form.batteryOption : undefined,
       });
       setCalc(data);
       setSent({});
@@ -180,6 +188,29 @@ export default function CalculatorPage() {
                   ))}
                 </div>
               </div>
+
+              {form.systemType === 'off-grid' && (
+                <div>
+                  <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2 block">Battery Option</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {BATTERY_OPTIONS.map(b => (
+                      <label key={b.value}
+                        className={`flex flex-col gap-1 p-3 rounded-lg border cursor-pointer transition-all
+                          ${form.batteryOption === b.value
+                            ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-300'
+                            : 'border-gray-200 hover:bg-gray-50'}`}>
+                        <div className="flex items-center gap-2">
+                          <input type="radio" name="batteryOption" value={b.value}
+                            checked={form.batteryOption === b.value} onChange={handleChange}
+                            className="accent-amber-500" />
+                          <span className="text-sm font-semibold">{b.label}</span>
+                        </div>
+                        <div className="text-[10px] text-gray-400 pl-6">{b.desc}</div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <Button onClick={calculate} variant="primary" size="lg" block icon={loading ? Loader2 : Zap}
                 disabled={!form.monthlyBill || loading}>

@@ -20,6 +20,10 @@ import ContactsPage from './pages/portal/ContactsPage';
 import CompaniesPage from './pages/portal/CompaniesPage';
 import ReportsPage from './pages/portal/ReportsPage';
 import AdminPage from './pages/portal/AdminPage';
+import EnquiriesPage from './pages/portal/EnquiriesPage';
+import EnquiryDetailPage from './pages/portal/EnquiryDetailPage';
+import ProjectsPage from './pages/portal/ProjectsPage';
+import ProjectDetailPage from './pages/portal/ProjectDetailPage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -40,10 +44,14 @@ export default function App() {
         <Route path="sales" element={<SalesPage />} />
         <Route path="tasks" element={<TasksPage />} />
         <Route path="pipeline" element={<PipelinePage />} />
+        <Route path="projects" element={<ProjectsPage />} />
+        <Route path="projects/:id" element={<ProjectDetailPage />} />
         <Route path="campaigns" element={<CampaignsPage />} />
         <Route path="email-analytics" element={<EmailAnalyticsPage />} />
         <Route path="lead-scoring" element={<LeadScoringPage />} />
         <Route path="contacts" element={<ContactsPage />} />
+        <Route path="enquiries" element={<EnquiriesPage />} />
+        <Route path="enquiries/:id" element={<EnquiryDetailPage />} />
         <Route path="companies" element={<CompaniesPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="admin" element={<AdminPage />} />

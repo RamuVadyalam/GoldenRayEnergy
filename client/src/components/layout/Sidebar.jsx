@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Briefcase, TrendingUp, CheckCircle, GitBranch, Megaphone, Mail, Target, Users, Building2, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Briefcase, TrendingUp, CheckCircle, GitBranch, Megaphone, Mail, Target, Users, Building2, BarChart3, Settings, LogOut, Inbox, FolderKanban } from 'lucide-react';
 
 const NAV = [
   { header: 'Overview', items: [{ to: '/portal', label: 'Dashboard', icon: LayoutDashboard, end: true }] },
   { header: 'Sales Hub', items: [
+    { to: '/portal/projects', label: 'Projects', icon: FolderKanban },
     { to: '/portal/deals', label: 'Deals', icon: Briefcase },
     { to: '/portal/sales', label: 'Sales Analytics', icon: TrendingUp },
     { to: '/portal/tasks', label: 'Tasks', icon: CheckCircle },
@@ -16,6 +17,7 @@ const NAV = [
     { to: '/portal/lead-scoring', label: 'Lead Scoring', icon: Target },
   ]},
   { header: 'Data Hub', items: [
+    { to: '/portal/enquiries', label: 'Website Enquiries', icon: Inbox },
     { to: '/portal/contacts', label: 'Contacts', icon: Users },
     { to: '/portal/companies', label: 'Companies', icon: Building2 },
     { to: '/portal/reports', label: 'Reports', icon: BarChart3 },
