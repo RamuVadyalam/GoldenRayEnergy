@@ -247,6 +247,77 @@ CREATE INDEX idx_finapps_created_at ON finance_applications(created_at DESC);
 
 CREATE TRIGGER trg_finapps_updated BEFORE UPDATE ON finance_applications FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
+-- ── Power Bill Uploads & Analysis ──
+CREATE TABLE power_bill_uploads (
+  id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  contact_id            UUID REFERENCES contacts(id) ON DELETE SET NULL,
+  uploader_name         VARCHAR(120),
+  uploader_email        VARCHAR(255),
+  uploader_phone        VARCHAR(50),
+  uploader_address      TEXT,
+  region                VARCHAR(100),
+
+  file_name             VARCHAR(255),
+  file_size             INTEGER,
+  mime_type             VARCHAR(100),
+
+  raw_text              TEXT,
+
+  retailer              VARCHAR(100),
+  account_number        VARCHAR(60),
+  icp_number            VARCHAR(40),
+  plan_name             VARCHAR(100),
+  user_type             VARCHAR(30),
+
+  billing_period_start  DATE,
+  billing_period_end    DATE,
+  billing_days          INTEGER,
+  due_date              DATE,
+
+  total_kwh             NUMERIC(10,2),
+  peak_kwh              NUMERIC(10,2),
+  off_peak_kwh          NUMERIC(10,2),
+  night_kwh             NUMERIC(10,2),
+  controlled_kwh        NUMERIC(10,2),
+  avg_daily_kwh         NUMERIC(8,2),
+
+  peak_rate             NUMERIC(6,4),
+  off_peak_rate         NUMERIC(6,4),
+  night_rate            NUMERIC(6,4),
+  controlled_rate       NUMERIC(6,4),
+
+  total_cost            NUMERIC(10,2),
+  daily_fixed_charge    NUMERIC(10,2),
+  avg_cost_per_kwh      NUMERIC(6,4),
+  gst_amount            NUMERIC(10,2),
+  prompt_discount       NUMERIC(10,2),
+
+  solar_export_kwh      NUMERIC(10,2),
+  solar_export_credit   NUMERIC(10,2),
+
+  prev_period_kwh       NUMERIC(10,2),
+  prev_period_cost      NUMERIC(10,2),
+
+  co2_emissions_kg      NUMERIC(10,2),
+  fixed_cost_share      NUMERIC(5,4),
+  variable_cost_share   NUMERIC(5,4),
+
+  status                VARCHAR(20) DEFAULT 'processed'
+    CHECK (status IN ('processed','partial','failed','pending')),
+  analysis_json         JSONB,
+
+  created_at            TIMESTAMPTZ DEFAULT NOW(),
+  updated_at            TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_pbu_created_at ON power_bill_uploads(created_at DESC);
+CREATE INDEX idx_pbu_retailer   ON power_bill_uploads(retailer);
+CREATE INDEX idx_pbu_contact    ON power_bill_uploads(contact_id);
+CREATE INDEX idx_pbu_region     ON power_bill_uploads(region);
+CREATE INDEX idx_pbu_status     ON power_bill_uploads(status);
+
+CREATE TRIGGER trg_pbu_updated BEFORE UPDATE ON power_bill_uploads FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
 -- ── System Config ──
 CREATE TABLE system_config (
   key VARCHAR(100) PRIMARY KEY,

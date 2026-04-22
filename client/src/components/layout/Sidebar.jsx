@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Briefcase, TrendingUp, CheckCircle, GitBranch, Megaphone, Mail, Target, Users, Building2, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Briefcase, TrendingUp, CheckCircle, GitBranch, Megaphone, Mail, Target, Users, Building2, BarChart3, Settings, LogOut, Zap, ShoppingBag, Package } from 'lucide-react';
 
 const NAV = [
   { header: 'Overview', items: [{ to: '/portal', label: 'Dashboard', icon: LayoutDashboard, end: true }] },
@@ -19,6 +19,11 @@ const NAV = [
     { to: '/portal/contacts', label: 'Contacts', icon: Users },
     { to: '/portal/companies', label: 'Companies', icon: Building2 },
     { to: '/portal/reports', label: 'Reports', icon: BarChart3 },
+    { to: '/portal/bill-analysis', label: 'Bill Analysis', icon: Zap },
+  ]},
+  { header: 'Shop', items: [
+    { to: '/portal/orders',  label: 'Orders',           icon: ShoppingBag },
+    { to: '/portal/catalog', label: 'Product Catalog',  icon: Package },
   ]},
   { header: 'Settings', items: [{ to: '/portal/admin', label: 'Admin', icon: Settings }], adminOnly: true },
 ];

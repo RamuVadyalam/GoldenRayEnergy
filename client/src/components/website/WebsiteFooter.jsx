@@ -28,7 +28,9 @@ export default function WebsiteFooter({ homepage = true }) {
         <div>
           <h4 className="text-xs font-bold text-white uppercase tracking-wide mb-3">Quick Links</h4>
           <div className="space-y-2">
-            {['Products', 'Calculator', 'Case Studies', 'FAQ', 'Contact'].map(l => (
+            <Link to="/products" className="block text-xs hover:text-amber-400 transition">Products</Link>
+            <Link to="/catalog"  className="block text-xs hover:text-amber-400 transition">🛒 Shop Catalog</Link>
+            {['Calculator', 'Case Studies', 'FAQ', 'Contact'].map(l => (
               <a key={l} href={anchor(l.toLowerCase().replace(/\s+/g, '-'))} className="block text-xs hover:text-amber-400 transition">{l}</a>
             ))}
             <Link to="/finance" className="block text-xs hover:text-amber-400 transition">Finance</Link>

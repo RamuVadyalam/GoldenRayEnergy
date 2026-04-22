@@ -122,6 +122,7 @@ export default function FinancePage() {
           <Link to="/" className="text-sm text-gray-200 hover:text-amber-300 font-medium transition flex items-center gap-1.5">
             <ArrowLeft size={13} /> Home
           </Link>
+          <Link to="/products" className="text-sm text-gray-200 hover:text-amber-300 font-medium transition hidden md:inline">Products</Link>
           <a href="/#calculator" className="text-sm text-gray-200 hover:text-amber-300 font-medium transition hidden md:inline">Calculator</a>
           <a href="/#case-studies" className="text-sm text-gray-200 hover:text-amber-300 font-medium transition hidden md:inline">Case Studies</a>
           <a href="/#contact" className="text-sm text-gray-200 hover:text-amber-300 font-medium transition hidden md:inline">Contact</a>

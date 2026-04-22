@@ -30,6 +30,7 @@ export default function WebsitePage() {
     monthlyBill: '', electricityRate: '0.32',
   });
   const [powerBillFile, setPowerBillFile] = useState(null);
+  const [billAnalysis, setBillAnalysis] = useState({ loading: false, done: false, error: '', data: null });
   const [calc, setCalc] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState('');
@@ -74,6 +75,29 @@ export default function WebsitePage() {
       setSubmitState({ loading: false, done: true, error: '', id: data.id });
     } catch (e) {
       setSubmitState({ loading: false, done: false, error: e.response?.data?.error || 'Submission failed. Please try again.', id: '' });
+    }
+  };
+
+  const uploadBill = async (file) => {
+    if (!file) return;
+    setPowerBillFile(file);
+    setBillAnalysis({ loading: true, done: false, error: '', data: null });
+    try {
+      const fd = new FormData();
+      fd.append('bill', file);
+      if (form.firstName) fd.append('firstName', form.firstName);
+      if (form.lastName)  fd.append('lastName',  form.lastName);
+      if (form.email)     fd.append('email',     form.email);
+      if (form.phone)     fd.append('phone',     form.phone);
+      if (form.address)   fd.append('address',   form.address);
+      const { data } = await axios.post('/api/powerbill/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setBillAnalysis({ loading: false, done: true, error: '', data });
+      // If the bill extracted a monthly cost, auto-fill the Monthly Bill field
+      if (data.analysis?.monthly_cost && !form.monthlyBill) {
+        setForm(f => ({ ...f, monthlyBill: String(Math.round(data.analysis.monthly_cost)) }));
+      }
+    } catch (e) {
+      setBillAnalysis({ loading: false, done: false, error: e.response?.data?.error || 'Could not read the bill. Try a clearer PDF or image.', data: null });
     }
   };
 
@@ -168,7 +192,9 @@ export default function WebsitePage() {
           </div>
         </div>
         <div className="flex items-center gap-6 relative">
-          {['Products', 'How It Works', 'Calculator', 'Case Studies', 'Testimonials', 'FAQ', 'Contact'].map(l => (
+          <Link to="/products" className="text-sm text-gray-200 hover:text-amber-300 font-medium transition">Products</Link>
+          <Link to="/catalog"  className="text-sm text-gray-200 hover:text-amber-300 font-medium transition">🛒 Shop</Link>
+          {['How It Works', 'Calculator', 'Case Studies', 'Testimonials', 'FAQ', 'Contact'].map(l => (
             <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm text-gray-200 hover:text-amber-300 font-medium transition">{l}</a>
           ))}
           <Link to="/finance" className="text-sm font-semibold bg-gradient-to-r from-amber-300 via-pink-300 to-violet-300 bg-clip-text text-transparent hover:from-amber-200 hover:to-white transition">
@@ -452,12 +478,137 @@ export default function WebsitePage() {
                   </div>
                 )}
                 <div>
-                  <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Power Bill Upload <span className="text-gray-300 font-normal">(optional)</span></label>
-                  <label className="mt-1 flex items-center gap-2 w-full px-3 py-2.5 rounded-lg border border-dashed border-gray-300 hover:border-amber-400 hover:bg-amber-50/30 cursor-pointer transition text-sm text-gray-400">
-                    <Upload size={14} className="flex-shrink-0" />
-                    <span className="truncate">{powerBillFile ? powerBillFile.name : 'Click to upload bill (PDF only)'}</span>
-                    <input type="file" accept=".pdf" onChange={e => setPowerBillFile(e.target.files[0] || null)} className="hidden" />
+                  <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Power Bill Upload <span className="text-gray-300 font-normal">(we'll auto-read your usage)</span></label>
+                  <label className="mt-1 flex items-center gap-2 w-full px-3 py-2.5 rounded-lg border border-dashed border-gray-300 hover:border-amber-400 hover:bg-amber-50/30 cursor-pointer transition text-sm text-gray-500">
+                    {billAnalysis.loading ? <Loader2 size={14} className="flex-shrink-0 animate-spin text-amber-500" /> : <Upload size={14} className="flex-shrink-0" />}
+                    <span className="truncate">{billAnalysis.loading ? 'Reading your bill...' : powerBillFile ? powerBillFile.name : 'Upload any bill — PDF, image, or text'}</span>
+                    <input type="file" onChange={e => e.target.files[0] && uploadBill(e.target.files[0])} className="hidden" />
                   </label>
+                  {billAnalysis.error && (
+                    <div className="mt-2 text-[11px] text-red-500 bg-red-50 border border-red-100 rounded-lg px-2.5 py-1.5">{billAnalysis.error}</div>
+                  )}
+                  {billAnalysis.done && billAnalysis.data && (() => {
+                    const ex = billAnalysis.data.extracted || {};
+                    const an = billAnalysis.data.analysis  || {};
+                    const rec = an.recommended_scenario;
+                    return (
+                      <div className="mt-2 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-3 text-xs space-y-3">
+                        <div className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                          <CheckCircle size={12} /> Bill analysed — {billAnalysis.data.status === 'processed' ? 'all key fields read' : 'partial read'}
+                        </div>
+
+                        {/* ── Headline extracted ── */}
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                          {[
+                            ex.retailer         && ['Retailer',     ex.retailer],
+                            ex.plan_name        && ['Plan',         ex.plan_name],
+                            ex.total_kwh        && ['Total kWh',    ex.total_kwh + ' kWh'],
+                            ex.total_cost       && ['Total cost',   '$' + ex.total_cost],
+                            ex.avg_daily_kwh    && ['Daily avg',    ex.avg_daily_kwh + ' kWh'],
+                            ex.avg_cost_per_kwh && ['Rate / kWh',   '$' + ex.avg_cost_per_kwh],
+                            an.annual_kwh       && ['Est. annual',  an.annual_kwh.toLocaleString() + ' kWh'],
+                            an.annual_cost      && ['Est. annual $', '$' + an.annual_cost.toLocaleString()],
+                          ].filter(Boolean).map(([l, v], i) => (
+                            <div key={i} className="flex justify-between gap-2 border-b border-gray-100 pb-0.5">
+                              <span className="text-gray-400">{l}</span><span className="font-semibold text-gray-700 truncate">{v}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* ── Recommended solar fit banner ── */}
+                        {rec && (
+                          <div className="rounded-lg bg-gradient-to-br from-amber-500 to-pink-500 text-white p-3 shadow">
+                            <div className="flex justify-between items-center mb-1">
+                              <div className="text-[10px] uppercase tracking-widest font-bold opacity-85">Best-fit solar system</div>
+                              <div className="text-[10px] opacity-85">Payback ~{rec.payback_years} yrs</div>
+                            </div>
+                            <div className="flex justify-between items-end">
+                              <div>
+                                <div className="text-2xl font-extrabold font-display">{rec.system_kw} kW</div>
+                                <div className="text-[10px] opacity-90">{rec.panel_count} panels · {rec.bill_offset_pct}% offset</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-extrabold font-display">${rec.annual_saving.toLocaleString()}/yr</div>
+                                <div className="text-[10px] opacity-90">25-yr save ~${rec.saving_25yr.toLocaleString()}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ── Quick deep-dive chips ── */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {an.usage_band && an.usage_band !== 'unknown' && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-bold">
+                              {an.usage_band === 'low' ? 'Low user' : an.usage_band === 'average' ? 'Average user' : an.usage_band === 'high' ? 'High user' : 'Very-high user'}
+                              {an.usage_vs_avg_pct != null && ` · ${an.usage_vs_avg_pct > 0 ? '+' : ''}${an.usage_vs_avg_pct}% vs NZ avg`}
+                            </span>
+                          )}
+                          {an.rate_band && an.rate_band !== 'unknown' && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 font-bold">
+                              Rate: {an.rate_band.replace('-', ' ')}
+                            </span>
+                          )}
+                          {an.current_co2_kg && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-bold">
+                              {Math.round(an.current_co2_kg)} kg CO₂/yr
+                            </span>
+                          )}
+                          {an.trees_equivalent && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">
+                              ≈ {an.trees_equivalent} trees/yr with solar
+                            </span>
+                          )}
+                          {an.switch_saving_annual > 0 && an.cheaper_retailers?.[0] && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 font-bold">
+                              Switch → save ~${Math.round(an.switch_saving_annual)}/yr
+                            </span>
+                          )}
+                        </div>
+
+                        {/* ── Top 3 recommendations ── */}
+                        {an.recommendations?.length > 0 && (
+                          <details className="bg-white/80 rounded-lg border border-amber-100" open>
+                            <summary className="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50 rounded-lg">
+                              💡 Personalised recommendations ({an.recommendations.length})
+                            </summary>
+                            <ul className="px-3 pb-2 pt-1 space-y-1.5">
+                              {an.recommendations.slice(0, 5).map((r, i) => (
+                                <li key={i} className="text-[10.5px] leading-relaxed">
+                                  <b className="text-gray-800">{r.title}.</b> <span className="text-gray-600">{r.tip}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        )}
+
+                        {/* ── Expandable: all 4 solar scenarios ── */}
+                        {an.scenarios?.length > 0 && (
+                          <details className="bg-white/80 rounded-lg border border-amber-100">
+                            <summary className="cursor-pointer px-2.5 py-1.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50 rounded-lg">
+                              ☀️ All 4 solar sizing scenarios
+                            </summary>
+                            <div className="grid grid-cols-2 gap-1.5 px-2 pb-2 pt-1">
+                              {an.scenarios.map(s => {
+                                const isRec = rec?.system_kw === s.system_kw;
+                                return (
+                                  <div key={s.system_kw} className={`rounded-lg p-2 text-[10px] ${isRec ? 'bg-amber-100 border border-amber-300' : 'bg-gray-50 border border-gray-100'}`}>
+                                    <div className="flex justify-between items-center mb-0.5">
+                                      <b className="text-[11px]">{s.system_kw} kW</b>
+                                      {isRec && <span className="text-[8px] bg-amber-500 text-white px-1 rounded font-bold">BEST</span>}
+                                    </div>
+                                    <div className="flex justify-between"><span className="text-gray-500">Cost</span><b>${s.system_cost.toLocaleString()}</b></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">Save/yr</span><b className="text-emerald-600">${s.annual_saving.toLocaleString()}</b></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">Payback</span><b>{s.payback_years}y</b></div>
+                                    <div className="flex justify-between"><span className="text-gray-500">Offset</span><b>{s.bill_offset_pct}%</b></div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div>
                   <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2 block">Call Me to Discuss Solar Installation</label>

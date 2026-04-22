@@ -5,6 +5,9 @@ const PAGE_TITLES = {
   '/portal/tasks': 'Tasks', '/portal/pipeline': 'Pipeline', '/portal/campaigns': 'Campaigns',
   '/portal/email-analytics': 'Email Analytics', '/portal/lead-scoring': 'Lead Scoring',
   '/portal/contacts': 'Contacts', '/portal/companies': 'Companies', '/portal/reports': 'Reports',
+  '/portal/bill-analysis': 'Power Bill Analysis',
+  '/portal/orders': 'Online Orders',
+  '/portal/catalog': 'Product Catalog',
   '/portal/admin': 'Admin',
 };
 

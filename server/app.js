@@ -18,6 +18,10 @@ import configRoutes from './routes/config.js';
 import quoteRoutes from './routes/quote.js';
 import otpRoutes from './routes/otp.js';
 import financeRoutes from './routes/finance.js';
+import powerbillRoutes from './routes/powerbill.js';
+import productEnquiryRoutes from './routes/productEnquiry.js';
+import productsRoutes from './routes/products.js';
+import ordersRoutes from './routes/orders.js';
 
 dotenv.config({ path: '../.env' });
 
@@ -68,6 +72,10 @@ app.use('/api/config', configRoutes);
 app.use('/api/quote', quoteRoutes);
 app.use('/api/otp', otpRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/powerbill', powerbillRoutes);
+app.use('/api/product-enquiry', productEnquiryRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/orders', ordersRoutes);
 
 // ── Health Check ──
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));

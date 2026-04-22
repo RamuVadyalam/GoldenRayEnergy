@@ -4,6 +4,11 @@ import { useAuth } from './context/AuthContext';
 // Website pages
 import WebsitePage from './pages/WebsitePage';
 import FinancePage from './pages/FinancePage';
+import ProductsPage from './pages/ProductsPage';
+import MarketPage from './pages/MarketPage';
+import CatalogPage from './pages/CatalogPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
 import LoginPage from './pages/LoginPage';
 
 // Portal pages
@@ -19,6 +24,9 @@ import LeadScoringPage from './pages/portal/LeadScoringPage';
 import ContactsPage from './pages/portal/ContactsPage';
 import CompaniesPage from './pages/portal/CompaniesPage';
 import ReportsPage from './pages/portal/ReportsPage';
+import PowerBillAnalysisPage from './pages/portal/PowerBillAnalysisPage';
+import OrdersPage from './pages/portal/OrdersPage';
+import ProductsAdminPage from './pages/portal/ProductsAdminPage';
 import AdminPage from './pages/portal/AdminPage';
 
 function ProtectedRoute({ children }) {
@@ -32,6 +40,11 @@ export default function App() {
     <Routes>
       <Route path="/" element={<WebsitePage />} />
       <Route path="/finance" element={<FinancePage />} />
+      <Route path="/products" element={<ProductsPage />} />
+      <Route path="/products/:market" element={<MarketPage />} />
+      <Route path="/catalog" element={<CatalogPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/order-success/:orderNumber" element={<OrderSuccessPage />} />
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/portal" element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
@@ -46,6 +59,9 @@ export default function App() {
         <Route path="contacts" element={<ContactsPage />} />
         <Route path="companies" element={<CompaniesPage />} />
         <Route path="reports" element={<ReportsPage />} />
+        <Route path="bill-analysis" element={<PowerBillAnalysisPage />} />
+        <Route path="orders"         element={<OrdersPage />} />
+        <Route path="catalog"        element={<ProductsAdminPage />} />
         <Route path="admin" element={<AdminPage />} />
       </Route>
     </Routes>
