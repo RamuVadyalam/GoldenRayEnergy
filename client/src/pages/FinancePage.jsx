@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import {
   ArrowLeft, Lock, Phone, Mail, MapPin, Sprout, ShieldCheck, Clock, HelpCircle,
-  Sparkles, Handshake, FileCheck, Wrench, TrendingDown, Building2, Users, MapPinned, Zap,
+  Handshake, FileCheck, Wrench, TrendingDown, Building2, Users, MapPinned, Zap,
   CheckCircle2, ArrowRight, CreditCard,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
@@ -33,7 +33,7 @@ const TRUST_BADGES = [
 // 4-step "How it works"
 // ═══════════════════════════════════════════════════════════════════════
 const STEPS = [
-  { n: '01', icon: Sparkles,   title: 'Free consultation',   desc: 'Talk to our solar advisors. We assess your home, usage, and the best package for your needs — completely free, no pressure.', gradient: 'from-sky-400 to-blue-500' },
+  { n: '01', icon: HelpCircle, title: 'Free consultation',   desc: 'Talk to our solar advisors. We assess your home, usage, and the best package for your needs — completely free, no pressure.', gradient: 'from-sky-400 to-blue-500' },
   { n: '02', icon: Handshake,  title: 'Choose your finance', desc: 'We walk you through all available options — Q Card, green bank loans, or your own bank. You pick what suits your situation.',  gradient: 'from-pink-500 to-fuchsia-500' },
   { n: '03', icon: Wrench,     title: 'We install',          desc: 'Our certified team handles everything — design, consent, installation, and compliance sign-off.',                             gradient: 'from-amber-500 to-orange-500' },
   { n: '04', icon: TrendingDown, title: 'Start saving',      desc: 'Your solar starts generating and you begin reducing your reliance on the grid — often enough to offset your repayments.',     gradient: 'from-emerald-500 to-teal-500' },

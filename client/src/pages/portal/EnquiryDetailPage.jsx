@@ -3,18 +3,18 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import { fmt$, fmtDateLong } from '../../utils/format';
+import { fmt$, fmtDateTime } from '../../utils/format';
 import {
   ArrowLeft, Sun, Zap, Leaf, DollarSign, TrendingUp, Battery,
   Mail, Phone, MapPin, Home, Calendar, User as UserIcon,
 } from 'lucide-react';
 
 const STATUS_OPTIONS = [
-  { value: 'new',       label: 'New',       color: '#f59e0b' },
-  { value: 'contacted', label: 'Contacted', color: '#3b82f6' },
-  { value: 'qualified', label: 'Qualified', color: '#8b5cf6' },
-  { value: 'won',       label: 'Won',       color: '#10b981' },
-  { value: 'lost',      label: 'Lost',      color: '#ef4444' },
+  { value: 'new',       label: 'New',       color: '#F5A623' },
+  { value: 'contacted', label: 'Contacted', color: '#1E90FF' },
+  { value: 'qualified', label: 'Qualified', color: '#FF6A00' },
+  { value: 'won',       label: 'Won',       color: '#2ECC71' },
+  { value: 'lost',      label: 'Lost',      color: '#EF4444' },
 ];
 
 function StatCard({ icon: Icon, label, value, sub, highlight }) {
@@ -88,7 +88,7 @@ export default function EnquiryDetailPage() {
           </Link>
           <div>
             <h2 className="text-lg font-bold font-display">{name}</h2>
-            <p className="text-[11px] text-gray-400">Submitted {fmtDateLong(enquiry.created_at)} · Ref <span className="font-mono text-amber-600">{enquiry.id.slice(0, 8)}</span></p>
+            <p className="text-[11px] text-gray-400">Submitted {fmtDateTime(enquiry.created_at)} · Ref <span className="font-mono text-amber-600">{enquiry.id.slice(0, 8)}</span></p>
           </div>
         </div>
 

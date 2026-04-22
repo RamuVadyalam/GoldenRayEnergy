@@ -3,22 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import DataTable from '../../components/ui/DataTable';
 import Badge from '../../components/ui/Badge';
-import { fmt$, fmtDate } from '../../utils/format';
+import { fmt$, fmtDateTime } from '../../utils/format';
 import { Search, Inbox } from 'lucide-react';
 
 const STATUS_COLOR = {
-  new:        '#f59e0b',
-  contacted:  '#3b82f6',
-  qualified:  '#8b5cf6',
-  won:        '#10b981',
-  lost:       '#ef4444',
+  new:        '#F5A623',
+  contacted:  '#1E90FF',
+  qualified:  '#FF6A00',
+  won:        '#2ECC71',
+  lost:       '#EF4444',
 };
 
 const INSTALL_COLOR = {
-  residential: '#3b82f6',
-  commercial:  '#8b5cf6',
-  'off-grid':  '#f97316',
-  ppa:         '#14b8a6',
+  residential: '#1E90FF',
+  commercial:  '#FF6A00',
+  'off-grid':  '#F5A623',
+  ppa:         '#2ECC71',
 };
 
 export default function EnquiriesPage() {
@@ -67,7 +67,7 @@ export default function EnquiriesPage() {
         onRowClick={r => nav(`/portal/enquiries/${r.id}`)}
         data={filtered}
         columns={[
-          { label: 'Submitted', render: r => <span className="text-xs text-gray-500">{fmtDate(r.created_at)}</span> },
+          { label: 'Submitted', render: r => <span className="text-xs text-gray-500 whitespace-nowrap">{fmtDateTime(r.created_at)}</span> },
           { label: 'Name', render: r => (
             <div>
               <div className="text-xs font-semibold">{[r.first_name, r.last_name].filter(Boolean).join(' ') || '—'}</div>

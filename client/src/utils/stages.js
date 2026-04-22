@@ -1,10 +1,10 @@
 export const PROJECT_STAGES = [
-  { id: 'new',          label: 'New',          icon: '🌱', color: '#6b7280', desc: 'Lead captured' },
-  { id: 'design',       label: 'Design',       icon: '📐', color: '#8b5cf6', desc: 'Site assessment + system design' },
-  { id: 'selling',      label: 'Selling',      icon: '💼', color: '#f59e0b', desc: 'Proposal + negotiation' },
-  { id: 'installation', label: 'Installation', icon: '🔧', color: '#3b82f6', desc: 'Scheduled + in progress' },
-  { id: 'maintenance',  label: 'Maintenance',  icon: '🛠️', color: '#10b981', desc: 'Post-install support' },
-  { id: 'exit',         label: 'Exit',         icon: '🏁', color: '#6366f1', desc: 'Closed / archived' },
+  { id: 'new',          label: 'New',          icon: '🌱', color: '#6B7280', desc: 'Lead captured' },
+  { id: 'design',       label: 'Design',       icon: '📐', color: '#1E90FF', desc: 'Site assessment + system design' },
+  { id: 'selling',      label: 'Selling',      icon: '💼', color: '#F5A623', desc: 'Proposal + negotiation' },
+  { id: 'installation', label: 'Installation', icon: '🔧', color: '#FF6A00', desc: 'Scheduled + in progress' },
+  { id: 'maintenance',  label: 'Maintenance',  icon: '🛠️', color: '#2ECC71', desc: 'Post-install support' },
+  { id: 'exit',         label: 'Exit',         icon: '🏁', color: '#475569', desc: 'Closed / archived' },
 ];
 
 export const getStage = (id) => PROJECT_STAGES.find(s => s.id === id) || PROJECT_STAGES[0];
