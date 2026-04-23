@@ -10,6 +10,7 @@ import SolarFinance from '../components/website/SolarFinance';
 import SolarChatbot from '../components/website/SolarChatbot';
 import WhatsAppAssistant from '../components/website/WhatsAppAssistant';
 import WebsiteFooter from '../components/website/WebsiteFooter';
+import SEO, { ld } from '../components/SEO';
 
 // ═══════════════════════════════════════════════════════════════════════
 // At-a-glance headline numbers
@@ -103,6 +104,17 @@ export default function FinancePage() {
 
   return (
     <div className="bg-white font-body min-h-screen flex flex-col">
+      <SEO
+        title="Solar Finance NZ — $0 Upfront Green Loans"
+        description="Go solar for $0 upfront with BNZ, ANZ, ASB, Westpac & Kiwibank green loans from 1% p.a., Q Card 36-month interest-free, or home loan top-ups. No-obligation quote in 24 hours."
+        path="/finance"
+        keywords="solar finance nz, green loan, westpac greater choices, anz good energy, q card interest free, bnz sustainable home loan, solar interest free nz"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Finance', path: '/finance' }]}
+        jsonLd={[
+          ld.faq(FAQ.map(f => [f.q, f.a])),
+          ld.service({ name: 'Solar Finance Brokerage', description: 'Match customers with the cheapest eligible solar finance product across NZ banks and lenders.', category: 'Finance' }),
+        ]}
+      />
       {/* ── Nav ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 h-16 flex items-center justify-between backdrop-blur-md shadow-lg shadow-black/20"
         style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.96) 0%, rgba(30,27,75,0.96) 45%, rgba(80,7,36,0.96) 100%)' }}>

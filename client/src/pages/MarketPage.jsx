@@ -10,6 +10,7 @@ import Button from '../components/ui/Button';
 import WebsiteFooter from '../components/website/WebsiteFooter';
 import SolarChatbot from '../components/website/SolarChatbot';
 import WhatsAppAssistant from '../components/website/WhatsAppAssistant';
+import SEO, { ld } from '../components/SEO';
 
 // ═══════════════════════════════════════════════════════════════════════
 // Market data — bundles, hero, FAQ per segment
@@ -347,8 +348,45 @@ export default function MarketPage() {
 
   const fmt$ = (n) => '$' + Number(n).toLocaleString('en-NZ', { maximumFractionDigits: 0 });
 
+  const minPrice = Math.min(...data.bundles.map(b => b.priceLow));
+  const seoDescMap = {
+    residential: `Residential solar for NZ homes. Pre-built bundles from $${minPrice.toLocaleString()} — installation, consent, grid paperwork + 10-yr workmanship included. Free quote in 2 minutes.`,
+    commercial:  `Commercial solar for NZ businesses. Pre-built systems from $${minPrice.toLocaleString()} up to 1 MW — PPA finance available. Free proposal in 24 hours.`,
+    offgrid:     `Off-grid solar for bachs, farms & lodges. Complete systems from $${minPrice.toLocaleString()} with Victron, BYD, Freedom Won batteries. NZ-wide installation.`,
+  };
+
   return (
     <div className="bg-white font-body min-h-screen flex flex-col">
+      <SEO
+        title={`${data.title} — ${data.bundles.length} Pre-Built Bundles`}
+        description={seoDescMap[data.id] || data.intro}
+        path={`/products/${data.id}`}
+        keywords={`${data.id} solar nz, ${data.title.toLowerCase()} nz, solar bundles, solar packages nz`}
+        breadcrumbs={[
+          { name: 'Home',     path: '/' },
+          { name: 'Products', path: '/products' },
+          { name: data.title, path: `/products/${data.id}` },
+        ]}
+        jsonLd={[
+          ld.faq(data.faqs),
+          ...data.bundles.map(b => ({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: `${data.title} — ${b.name}`,
+            description: `${b.subtitle}. ${b.features.join('. ')}. Best for: ${b.bestFor}.`,
+            image: b.img,
+            brand: { '@type': 'Brand', name: 'Goldenray Energy NZ' },
+            offers: {
+              '@type': 'AggregateOffer',
+              priceCurrency: 'NZD',
+              lowPrice: b.priceLow,
+              highPrice: b.priceHigh,
+              availability: 'https://schema.org/InStock',
+              seller: { '@type': 'Organization', name: 'Goldenray Energy NZ Ltd' },
+            },
+          })),
+        ]}
+      />
       {/* ── Dark nav ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 h-16 flex items-center justify-between backdrop-blur-md shadow-lg shadow-black/20"
         style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.96) 0%, rgba(30,27,75,0.96) 45%, rgba(80,7,36,0.96) 100%)' }}>
@@ -421,7 +459,7 @@ export default function MarketPage() {
             {data.bundles.map(b => (
               <div key={b.id} className={`bg-white rounded-2xl border overflow-hidden hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex flex-col ${b.popular ? 'border-amber-300 ring-2 ring-amber-200' : 'border-gray-100'}`}>
                 <div className="h-40 relative overflow-hidden">
-                  <img src={b.img} alt={b.name} className="w-full h-full object-cover" />
+                  <img src={b.img} alt={`${b.name} — ${b.capacity} solar bundle`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                   {b.popular && (
                     <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 shadow-lg">

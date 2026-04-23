@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authenticate } from '../middleware/auth.js';
+import { sendWelcomeEmail } from '../services/emailService.js';
 
 const router = Router();
 
@@ -86,6 +87,17 @@ router.post('/apply', async (req, res) => {
         },
       });
     } catch (e) { console.warn('Activity log failed:', e.message); }
+
+    // Fire welcome email
+    if (f.email) {
+      sendWelcomeEmail({
+        to: f.email,
+        name: fullName,
+        kind: 'finance',
+        referenceId: app.id,
+        summary: f.loanAmount ? `<b>Your enquiry:</b> ${String(f.product).replace('_',' ')} for $${Number(f.loanAmount).toLocaleString()} over ${f.termYears || 5} yrs.` : null,
+      }).catch(e => console.warn('[finance] welcome email failed:', e.message));
+    }
 
     res.status(201).json({ success: true, id: app.id, contact_id: contactId, status: app.status });
   } catch (e) {

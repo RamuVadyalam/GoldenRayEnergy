@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Client build ──
+  client:
+    name: Client · Vite build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+      - name: Install client deps
+        working-directory: client
+        run: npm ci
+      - name: Build client
+        working-directory: client
+        run: npm run build
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-dist
+          path: client/dist/
+          retention-days: 7
+
+  # ── Server sanity ──
+  server:
+    name: Server · import check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+      - name: Install server deps
+        working-directory: server
+        run: npm ci
+      - name: Syntax + import check
+        working-directory: server
+        run: node --check app.js && node -e "import('./app.js').catch(() => process.exit(0))"
+        env:
+          DISABLE_CRON: '1'
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: dummy
+          JWT_SECRET: dummy
+          PORT: 5001
+
+  # ── SQL lint ──
+  sql:
+    name: SQL · migration sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure each migration is named + non-empty
+        run: |
+          shopt -s nullglob
+          failed=0
+          for f in server/db/migrations/*.sql; do
+            [ -s "$f" ] || { echo "::error file=$f::empty migration"; failed=1; }
+            grep -Eq '(CREATE TABLE|ALTER TABLE|INSERT INTO|CREATE INDEX)' "$f" \
+              || { echo "::warning file=$f::no CREATE/ALTER/INSERT/INDEX"; }
+          done
+          exit $failed

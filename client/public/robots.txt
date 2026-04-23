@@ -1,0 +1,24 @@
+# robots.txt for goldenrayenergy.co.nz
+# All crawlers allowed on public content, blocked from portal/api.
+
+User-agent: *
+Allow: /
+Disallow: /portal
+Disallow: /portal/*
+Disallow: /login
+Disallow: /checkout
+Disallow: /order-success/*
+Disallow: /api/
+Disallow: /*?*
+Crawl-delay: 1
+
+# Explicit allow for key marketing pages
+Allow: /products
+Allow: /products/residential
+Allow: /products/commercial
+Allow: /products/offgrid
+Allow: /finance
+Allow: /catalog
+Allow: /cookie-policy
+
+Sitemap: https://goldenrayenergy.co.nz/sitemap.xml

@@ -1,0 +1,16 @@
+{
+  "name": "Goldenray Energy NZ",
+  "short_name": "Goldenray",
+  "description": "NZ's trusted solar energy installer — panels, batteries, EV chargers and $0-upfront finance.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "lang": "en-NZ",
+  "categories": ["business", "shopping", "utilities"],
+  "icons": [
+    { "src": "/logo.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any" },
+    { "src": "/logo.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any" }
+  ]
+}

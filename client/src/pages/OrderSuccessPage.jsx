@@ -4,6 +4,7 @@ import axios from 'axios';
 import { CheckCircle2, Mail, Phone, Clock, ShoppingBag, FileText, ArrowRight, Download } from 'lucide-react';
 import Button from '../components/ui/Button';
 import WebsiteFooter from '../components/website/WebsiteFooter';
+import SEO from '../components/SEO';
 
 const fmt$ = (n) => '$' + Number(n).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -23,6 +24,7 @@ export default function OrderSuccessPage() {
 
   return (
     <div className="bg-white font-body min-h-screen flex flex-col">
+      <SEO title={`Order ${orderNumber}`} path={`/order-success/${orderNumber}`} noindex />
       {/* Simple nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 h-16 flex items-center justify-between backdrop-blur-md shadow-lg shadow-black/20"
         style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.96) 0%, rgba(30,27,75,0.96) 45%, rgba(80,7,36,0.96) 100%)' }}>

@@ -11,6 +11,7 @@ import SolarChatbot from '../components/website/SolarChatbot';
 import WhatsAppAssistant from '../components/website/WhatsAppAssistant';
 import FloatingCart from '../components/shop/FloatingCart';
 import { useCart } from '../context/CartContext';
+import SEO, { ld } from '../components/SEO';
 
 const CATEGORY_META = {
   panel:      { label: 'Solar Panels',   icon: Sun,     gradient: 'from-amber-500 to-orange-500' },
@@ -67,6 +68,14 @@ export default function CatalogPage() {
 
   return (
     <div className="bg-white font-body min-h-screen flex flex-col">
+      <SEO
+        title="Solar Shop NZ — Order Panels, Inverters, Batteries Online"
+        description={`Shop ${products.length || 'all'} solar products online. Tier-1 brands — REC, Fronius, Tesla Powerwall, BYD, Zappi, S-5! — free shipping over $5,000, Auckland dispatch, 15% GST included.`}
+        path="/catalog"
+        keywords="solar shop nz, buy solar panels online, solar inverter nz, tesla powerwall nz, zappi ev charger, solar parts nz"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Catalog', path: '/catalog' }]}
+        jsonLd={products.length ? [ld.itemList(products.slice(0, 20))] : undefined}
+      />
       {/* Dark nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 h-16 flex items-center justify-between backdrop-blur-md shadow-lg shadow-black/20"
         style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.96) 0%, rgba(30,27,75,0.96) 45%, rgba(80,7,36,0.96) 100%)' }}>
@@ -183,7 +192,7 @@ function ProductCard({ p, onAdd }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col">
       <div className="h-44 relative overflow-hidden bg-gray-50">
-        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+        <img src={p.image_url} alt={`${p.brand} ${p.name}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
         {cat && (
           <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow bg-gradient-to-r ${cat.gradient} flex items-center gap-1`}>
             <cat.icon size={9} /> {cat.label}

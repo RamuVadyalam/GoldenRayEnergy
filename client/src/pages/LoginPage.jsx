@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { ArrowRight, ArrowLeft, Info } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import SEO from '../components/SEO';
 
 const DEMO_USERS = [
   { name: 'Aroha Mitchell', email: 'aroha@goldenray.co.nz', pw: 'admin123', role: 'Admin', color: '#dc2626' },
@@ -34,6 +35,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-emerald-50">
+      <SEO title="Employee Portal Login" path="/login" noindex />
       <div className="w-full max-w-md px-4">
         <Link to="/" className="flex items-center gap-3 mb-7">
           <img src="/logo.jpg" alt="Goldenray Energy NZ" className="h-14 w-auto object-contain" />

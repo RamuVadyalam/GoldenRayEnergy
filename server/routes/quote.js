@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { calculateSolar } from '../services/calcService.js';
 import { generateQuotePDF } from '../services/quotePdfService.js';
-import { sendQuoteEmail } from '../services/emailService.js';
+import { sendQuoteEmail, sendWelcomeEmail } from '../services/emailService.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
 const router = Router();
@@ -111,6 +111,18 @@ router.post('/submit', async (req, res) => {
         source:       'website_form',
       },
     });
+
+    // ── 4. Welcome email (fire-and-forget) ──
+    if (form.email) {
+      sendWelcomeEmail({
+        to: form.email, name,
+        kind: 'enquiry',
+        referenceId: enquiry.id,
+        summary: calculation?.totalCost
+          ? `<b>Your instant estimate:</b> ${calculation.systemSize}kW system · $${Math.round(calculation.totalCost).toLocaleString()} installed · payback ${calculation.paybackYears} yrs.`
+          : null,
+      }).catch(e => console.warn('[quote] welcome email failed:', e.message));
+    }
 
     res.status(201).json({ success: true, id: enquiry.id, contact_id: contact.id });
   } catch (e) {

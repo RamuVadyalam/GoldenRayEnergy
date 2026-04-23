@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authenticate } from '../middleware/auth.js';
+import { sendOrderConfirmation } from '../services/emailService.js';
 
 const router = Router();
 
@@ -97,6 +98,20 @@ router.post('/', async (req, res) => {
     const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(itemsWithOrderId);
     if (itemsErr) console.warn('Order items insert failed:', itemsErr.message);
 
+    // ── 4b. Deduct stock from products table + auto-disable at 0 ──
+    for (const li of lineItems) {
+      if (!li.product_id) continue;
+      try {
+        const { data: prod } = await supabaseAdmin
+          .from('products').select('stock_qty').eq('id', li.product_id).single();
+        const newQty = Math.max(0, (prod?.stock_qty || 0) - li.qty);
+        await supabaseAdmin
+          .from('products')
+          .update({ stock_qty: newQty, in_stock: newQty > 0 })
+          .eq('id', li.product_id);
+      } catch (e) { console.warn('Stock deduct failed for', li.product_id, '·', e.message); }
+    }
+
     // ── 5. Log activity ──
     try {
       await supabaseAdmin.from('activities').insert({
@@ -112,6 +127,16 @@ router.post('/', async (req, res) => {
         },
       });
     } catch (e) { console.warn('Activity log failed:', e.message); }
+
+    // ── 6. Fire confirmation email (fire-and-forget) ──
+    sendOrderConfirmation({
+      order_number: orderNumber, status: order.status,
+      first_name: customer.firstName, last_name: customer.lastName, email: customer.email,
+      subtotal, shipping_cost: shippingCost, gst, total,
+      shipping_address: shipping.address, shipping_city: shipping.city, shipping_postcode: shipping.postcode,
+      payment_method: payment.method || 'bank_transfer',
+      items: lineItems,
+    }).catch(e => console.warn('[orders] confirmation email failed:', e.message));
 
     res.status(201).json({
       success: true,

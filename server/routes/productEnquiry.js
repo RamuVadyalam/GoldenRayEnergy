@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authenticate } from '../middleware/auth.js';
+import { sendWelcomeEmail } from '../services/emailService.js';
 
 const router = Router();
 
@@ -91,6 +92,17 @@ router.post('/', async (req, res) => {
         },
       });
     } catch (e) { console.warn('Activity log failed:', e.message); }
+
+    // Fire welcome email
+    if (f.email) {
+      sendWelcomeEmail({
+        to: f.email,
+        name: fullName,
+        kind: 'product_enquiry',
+        referenceId: enq.id,
+        summary: f.bundleName ? `<b>Your enquiry:</b> ${f.bundleName} (${f.market}) — ${f.budgetBand || 'budget TBD'}.` : null,
+      }).catch(e => console.warn('[product-enquiry] welcome email failed:', e.message));
+    }
 
     res.status(201).json({ success: true, id: enq.id, contact_id: contactId });
   } catch (e) {

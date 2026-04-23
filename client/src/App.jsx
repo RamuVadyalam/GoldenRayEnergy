@@ -1,5 +1,8 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import CookieBanner from './components/CookieBanner';
+import CookiePolicyPage from './pages/CookiePolicyPage';
+import { OrganizationLD } from './components/SEO';
 
 // Website pages
 import WebsitePage from './pages/WebsitePage';
@@ -36,9 +39,14 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
+  const loc = useLocation();
+  const isPortal = loc.pathname.startsWith('/portal');
   return (
+    <>
+    <OrganizationLD />
     <Routes>
       <Route path="/" element={<WebsitePage />} />
+      <Route path="/cookie-policy" element={<CookiePolicyPage />} />
       <Route path="/finance" element={<FinancePage />} />
       <Route path="/products" element={<ProductsPage />} />
       <Route path="/products/:market" element={<MarketPage />} />
@@ -65,5 +73,7 @@ export default function App() {
         <Route path="admin" element={<AdminPage />} />
       </Route>
     </Routes>
+    {!isPortal && <CookieBanner />}
+    </>
   );
 }

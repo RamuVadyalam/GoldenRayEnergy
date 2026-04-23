@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import Button from '../ui/Button';
+import { CookiePreferencesLink } from '../CookieBanner';
 
 export default function WebsiteFooter({ homepage = true }) {
   // When on the homepage, anchor links scroll within the page.
@@ -65,9 +66,11 @@ export default function WebsiteFooter({ homepage = true }) {
       </div>
       <div className="max-w-5xl mx-auto border-t border-gray-800 pt-6 flex flex-wrap justify-between items-center gap-3 relative">
         <span className="text-[11px]">© 2026 Goldenray Energy NZ Ltd. All rights reserved. New Zealand.</span>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <span className="text-[11px] hover:text-amber-400 cursor-pointer transition">Privacy Policy</span>
           <span className="text-[11px] hover:text-amber-400 cursor-pointer transition">Terms of Service</span>
+          <Link to="/cookie-policy" className="text-[11px] hover:text-amber-400 transition">Cookie Policy</Link>
+          <CookiePreferencesLink />
           <Link to="/login"><Button variant="dark" size="sm" icon={Lock}>Employee Portal</Button></Link>
         </div>
       </div>

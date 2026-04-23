@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import WebsiteFooter from '../components/website/WebsiteFooter';
 import SolarChatbot from '../components/website/SolarChatbot';
 import WhatsAppAssistant from '../components/website/WhatsAppAssistant';
+import SEO from '../components/SEO';
 
 // ═══════════════════════════════════════════════════════════════════════
 // Market segments
@@ -397,6 +398,13 @@ export default function ProductsPage() {
 
   return (
     <div className="bg-white font-body min-h-screen flex flex-col">
+      <SEO
+        title="Solar Brands NZ — Panels, Inverters, Batteries & EV Chargers"
+        description={`Goldenray Energy NZ stocks ${brandTotal}+ Tier-1 solar brands across ${CATEGORIES.length} categories. REC, Fronius, Tesla Powerwall, BYD, Sungrow, Jinko, LONGi and more — residential, commercial & off-grid ready.`}
+        path="/products"
+        keywords="solar brands nz, rec solar, fronius nz, tesla powerwall, byd battery, sungrow inverter, jinko solar, longi solar, enphase nz"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Products', path: '/products' }]}
+      />
       {/* ── Dark Nav (matches home + finance) ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 h-16 flex items-center justify-between backdrop-blur-md shadow-lg shadow-black/20"
         style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.96) 0%, rgba(30,27,75,0.96) 45%, rgba(80,7,36,0.96) 100%)' }}>
@@ -475,7 +483,7 @@ export default function ProductsPage() {
               <Link key={m.id} to={`/products/${m.id}`}
                 className="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 bg-white border border-gray-100 group">
                 <div className="h-44 relative overflow-hidden">
-                  <img src={m.img} alt={m.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <img src={m.img} alt={`${m.title} solar systems`} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-md bg-gradient-to-r ${m.gradient}`}>
                     <m.icon size={10} className="inline mr-1" /> {m.title}
@@ -538,7 +546,7 @@ export default function ProductsPage() {
                 <div key={b.name} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col">
                   {/* Top image */}
                   <div className="h-36 relative overflow-hidden">
-                    <img src={b.img} alt={b.name} className="w-full h-full object-cover" />
+                    <img src={b.img} alt={`${b.name} solar products NZ`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white shadow-md" style={{ background: b.color }}>{b.name}</span>

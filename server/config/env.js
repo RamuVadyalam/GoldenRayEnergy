@@ -19,6 +19,7 @@ export default {
     sendgridKey: process.env.SENDGRID_API_KEY,
     from: process.env.EMAIL_FROM || 'hello@goldenrayenergy.co.nz',
     fromName: process.env.EMAIL_FROM_NAME || 'GoldenRay Energy',
+    adminDigest: process.env.ADMIN_DIGEST_EMAIL || process.env.EMAIL_FROM || 'hello@goldenrayenergy.co.nz',
   },
   smtp: {
     host: process.env.SMTP_HOST,

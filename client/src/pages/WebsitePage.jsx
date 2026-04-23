@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import SolarChatbot from '../components/website/SolarChatbot';
 import WhatsAppAssistant from '../components/website/WhatsAppAssistant';
 import WebsiteFooter from '../components/website/WebsiteFooter';
+import SEO, { ld } from '../components/SEO';
 import axios from 'axios';
 
 const SYSTEM_TYPES = [
@@ -179,6 +180,17 @@ export default function WebsitePage() {
 
   return (
     <div className="bg-white font-body">
+      <SEO
+        title="Solar Panels, Batteries & EV Chargers for Aotearoa"
+        description="NZ's trusted solar energy installer. Residential, commercial & off-grid solar systems from Tier-1 brands (Fronius, REC, Tesla Powerwall). $0-upfront finance from 1% p.a."
+        path="/"
+        keywords="solar NZ, solar Auckland, solar installer, solar panels, home battery, Tesla Powerwall, Fronius inverter, REC panels, solar finance"
+        jsonLd={[
+          ld.service({ name: 'Residential Solar Installation', description: 'Design, supply and installation of rooftop solar PV systems for New Zealand homes.', category: 'Solar Installation' }),
+          ld.service({ name: 'Commercial Solar Installation', description: 'Large-scale solar PV for NZ businesses — up to 1 MW arrays with PPA options.',     category: 'Solar Installation' }),
+          ld.service({ name: 'Off-Grid Solar Systems',        description: 'Bach, farm and lodge off-grid power with Victron, BYD, and Freedom Won batteries.', category: 'Off-grid Power' }),
+        ]}
+      />
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-10 h-16 flex items-center justify-between backdrop-blur-md shadow-lg shadow-black/20 relative" style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.96) 0%, rgba(30,27,75,0.96) 45%, rgba(80,7,36,0.96) 100%)' }}>
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-400 via-pink-500 via-fuchsia-500 via-violet-500 to-teal-400" />

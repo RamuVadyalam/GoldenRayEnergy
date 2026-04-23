@@ -22,6 +22,9 @@ import powerbillRoutes from './routes/powerbill.js';
 import productEnquiryRoutes from './routes/productEnquiry.js';
 import productsRoutes from './routes/products.js';
 import ordersRoutes from './routes/orders.js';
+import { startScheduler } from './jobs/scheduler.js';
+import sitemapRoute from './routes/sitemap.js';
+import digestRoute from './routes/digest.js';
 
 dotenv.config({ path: '../.env' });
 
@@ -76,6 +79,8 @@ app.use('/api/powerbill', powerbillRoutes);
 app.use('/api/product-enquiry', productEnquiryRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
+app.use('/api/admin', digestRoute);
+app.use('/', sitemapRoute);
 
 // ── Health Check ──
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
@@ -88,5 +93,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => console.log(`⚡ GoldenRay API running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`⚡ GoldenRay API running on port ${PORT}`);
+  startScheduler();
+});
 export default app;
