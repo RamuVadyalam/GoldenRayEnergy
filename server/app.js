@@ -25,6 +25,7 @@ import ordersRoutes from './routes/orders.js';
 import { startScheduler } from './jobs/scheduler.js';
 import sitemapRoute from './routes/sitemap.js';
 import digestRoute from './routes/digest.js';
+import webhookRoutes from './routes/webhooks.js';
 
 dotenv.config({ path: '../.env' });
 
@@ -80,6 +81,7 @@ app.use('/api/product-enquiry', productEnquiryRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/admin', digestRoute);
+app.use('/webhooks/n8n', webhookRoutes);
 app.use('/', sitemapRoute);
 
 // ── Health Check ──

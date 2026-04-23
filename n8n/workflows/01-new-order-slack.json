@@ -1,0 +1,42 @@
+{
+  "name": "Goldenray · New order → Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "goldenray/order-placed",
+        "options": {}
+      },
+      "id": "trigger",
+      "name": "When order.placed webhook fires",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "goldenray-order-placed"
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "requestMethod": "POST",
+        "url": "https://hooks.slack.com/services/REPLACE_ME",
+        "bodyContentType": "json",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{ {\n  \"text\": \":moneybag: *New order* `\" + $json.data.order_number + \"` — \" + $json.data.customer.name + \" · $\" + $json.data.total + \" (\" + $json.data.items + \" items)\"\n} }}"
+      },
+      "id": "slack",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [540, 300]
+    }
+  ],
+  "connections": {
+    "When order.placed webhook fires": {
+      "main": [[{ "node": "Post to Slack", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "tags": ["goldenray", "orders"]
+}

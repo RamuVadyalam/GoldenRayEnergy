@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authenticate } from '../middleware/auth.js';
 import { sendWelcomeEmail } from '../services/emailService.js';
+import { fire as fireN8n } from '../services/n8nDispatch.js';
 
 const router = Router();
 
@@ -87,6 +88,14 @@ router.post('/apply', async (req, res) => {
         },
       });
     } catch (e) { console.warn('Activity log failed:', e.message); }
+
+    // Fan out to n8n
+    fireN8n('finance.applied', {
+      application_id: app.id, contact_id: contactId,
+      name: fullName, email: f.email, phone: f.phone,
+      product: f.product, loan_amount: f.loanAmount, term_years: f.termYears,
+      estimated_monthly: f.estimatedMonthly, intent: f.intent || 'quote',
+    });
 
     // Fire welcome email
     if (f.email) {

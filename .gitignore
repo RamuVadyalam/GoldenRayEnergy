@@ -3,3 +3,7 @@ dist/
 .env
 *.log
 .DS_Store
+
+# n8n local runtime (node_modules + .n8n user data)
+n8n/runtime/
+.n8n/

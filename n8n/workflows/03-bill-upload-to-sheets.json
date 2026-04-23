@@ -1,0 +1,80 @@
+{
+  "name": "Goldenray · Bill upload → Google Sheets + follow-up email",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "goldenray/bill-uploaded", "options": {} },
+      "id": "trigger",
+      "name": "When bill.uploaded fires",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "goldenray-bill-uploaded"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "REPLACE_SHEETS_ID",
+        "sheetName": "Bill uploads",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp":  "={{ $json.timestamp }}",
+            "Upload ID":  "={{ $json.data.upload_id }}",
+            "Contact":    "={{ $json.data.contact_id }}",
+            "Retailer":   "={{ $json.data.retailer }}",
+            "Total kWh":  "={{ $json.data.total_kwh }}",
+            "Total cost": "={{ $json.data.total_cost }}",
+            "Recommended kW": "={{ $json.data.recommended_kw }}",
+            "Annual saving":  "={{ $json.data.annual_saving }}",
+            "Status":     "={{ $json.data.status }}"
+          }
+        }
+      },
+      "id": "sheets",
+      "name": "Append to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [480, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [{ "value1": "={{ $json.data.annual_saving }}", "operation": "larger", "value2": 1500 }]
+        }
+      },
+      "id": "filter",
+      "name": "High-value lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [480, 420]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:5000/webhooks/n8n/activity",
+        "requestMethod": "POST",
+        "bodyContentType": "json",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{ {\n  \"type\": \"system\",\n  \"description\": \"🔥 High-value bill upload — est. $\" + $json.data.annual_saving + \"/yr saving with solar\",\n  \"contact_id\": $json.data.contact_id,\n  \"metadata\": $json.data\n} }}"
+      },
+      "id": "activity",
+      "name": "Log high-value activity",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [720, 420]
+    }
+  ],
+  "connections": {
+    "When bill.uploaded fires": {
+      "main": [[
+        { "node": "Append to Google Sheet", "type": "main", "index": 0 },
+        { "node": "High-value lead?",        "type": "main", "index": 0 }
+      ]]
+    },
+    "High-value lead?": {
+      "main": [[{ "node": "Log high-value activity", "type": "main", "index": 0 }], []]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "tags": ["goldenray", "bills", "sheets"]
+}

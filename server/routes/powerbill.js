@@ -3,6 +3,7 @@ import multer from 'multer';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authenticate } from '../middleware/auth.js';
 import { extractBill } from '../services/billExtractor.js';
+import { fire as fireN8n } from '../services/n8nDispatch.js';
 
 const router = Router();
 
@@ -130,6 +131,15 @@ router.post('/upload', upload.single('bill'), async (req, res) => {
         },
       });
     } catch (e) { console.warn('Activity log failed:', e.message); }
+
+    // Fan out to n8n
+    fireN8n('bill.uploaded', {
+      upload_id: row.id, contact_id: contactId,
+      retailer: extracted.retailer, total_kwh: extracted.total_kwh, total_cost: extracted.total_cost,
+      recommended_kw: analysis?.recommended_scenario?.system_kw,
+      annual_saving: analysis?.recommended_scenario?.annual_saving,
+      status,
+    });
 
     res.status(201).json({
       success: true,

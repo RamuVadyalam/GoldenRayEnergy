@@ -1,0 +1,43 @@
+# ═══════════════════════════════════════════════════════════════════
+# Spin up n8n locally alongside the Goldenray stack.
+#
+#   docker compose -f docker-compose.n8n.yml up -d
+#   open http://localhost:5678     (login with N8N_BASIC_AUTH_USER/PASSWORD)
+#
+# Once running, import workflows from ./n8n/workflows/*.json and point them
+# at host.docker.internal:5000 (the Goldenray API running on the host).
+# ═══════════════════════════════════════════════════════════════════
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: goldenray-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      # Basic auth — change for anything beyond local dev
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER:   "admin"
+      N8N_BASIC_AUTH_PASSWORD: "goldenray"
+      # Host settings
+      N8N_HOST: "localhost"
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: "http"
+      WEBHOOK_URL: "http://localhost:5678"
+      # Timezone + data retention
+      GENERIC_TIMEZONE: "Pacific/Auckland"
+      TZ: "Pacific/Auckland"
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "168"   # hours (7 days)
+      # Called when n8n workflows hit HTTP Request nodes targeting the host
+      N8N_SECURE_COOKIE: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+    extra_hosts:
+      # Lets n8n reach our Express API on the host (both macOS/Win/Linux)
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  n8n_data:

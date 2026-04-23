@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authenticate } from '../middleware/auth.js';
 import { sendOrderConfirmation } from '../services/emailService.js';
+import { fire as fireN8n } from '../services/n8nDispatch.js';
 
 const router = Router();
 
@@ -128,7 +129,19 @@ router.post('/', async (req, res) => {
       });
     } catch (e) { console.warn('Activity log failed:', e.message); }
 
-    // ── 6. Fire confirmation email (fire-and-forget) ──
+    // ── 6. Fan out to n8n workflows (Slack, CRM, Sheets, Xero, etc.) ──
+    fireN8n('order.placed', {
+      order_id: order.id,
+      order_number: orderNumber,
+      total, subtotal, shipping_cost: shippingCost, gst,
+      items: lineItems.length,
+      customer: { name: [customer.firstName, customer.lastName].filter(Boolean).join(' '), email: customer.email, phone: customer.phone },
+      shipping,
+      payment_method: payment.method || 'bank_transfer',
+      contact_id: contactId,
+    });
+
+    // ── 7. Fire confirmation email (fire-and-forget) ──
     sendOrderConfirmation({
       order_number: orderNumber, status: order.status,
       first_name: customer.firstName, last_name: customer.lastName, email: customer.email,

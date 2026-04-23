@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authenticate } from '../middleware/auth.js';
 import { sendWelcomeEmail } from '../services/emailService.js';
+import { fire as fireN8n } from '../services/n8nDispatch.js';
 
 const router = Router();
 
@@ -92,6 +93,14 @@ router.post('/', async (req, res) => {
         },
       });
     } catch (e) { console.warn('Activity log failed:', e.message); }
+
+    // Fan out to n8n
+    fireN8n('product.enquiry', {
+      enquiry_id: enq.id, contact_id: contactId,
+      name: fullName, email: f.email, phone: f.phone,
+      market: f.market, bundle_id: f.bundleId, bundle_name: f.bundleName,
+      budget_band: f.budgetBand, intent: f.intent, approx_value: f.approxValue,
+    });
 
     // Fire welcome email
     if (f.email) {

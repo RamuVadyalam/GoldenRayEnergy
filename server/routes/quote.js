@@ -3,6 +3,7 @@ import { calculateSolar } from '../services/calcService.js';
 import { generateQuotePDF } from '../services/quotePdfService.js';
 import { sendQuoteEmail, sendWelcomeEmail } from '../services/emailService.js';
 import { supabaseAdmin } from '../config/supabase.js';
+import { fire as fireN8n } from '../services/n8nDispatch.js';
 
 const router = Router();
 
@@ -112,7 +113,15 @@ router.post('/submit', async (req, res) => {
       },
     });
 
-    // ── 4. Welcome email (fire-and-forget) ──
+    // ── 4. Fan out to n8n ──
+    fireN8n('enquiry.submitted', {
+      enquiry_id: enquiry.id, contact_id: contact.id,
+      name, email: form.email, phone: form.phone,
+      monthly_bill: form.monthlyBill, system_size: calculation?.systemSize, total_cost: calculation?.totalCost,
+      lead_score: leadScore, source: 'website',
+    });
+
+    // ── 5. Welcome email (fire-and-forget) ──
     if (form.email) {
       sendWelcomeEmail({
         to: form.email, name,
